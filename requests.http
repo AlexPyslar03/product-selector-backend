@@ -1,0 +1,40 @@
+### Взять всех пользователей
+GET http://localhost:8000/api/user HTTP/1.1
+### Добавить нового пользователя
+POST http://localhost:8000/api/user/create HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Сергей",
+    "surname": "Самохвалов",
+    "email": "sergey_samohvalov@gmail.com",
+    "birth_date": "1995-09-26",
+    "password": "heathbeats",
+    "registration_date": "2024-05-06",
+    "access_level": 0
+}
+
+### Взять все рецепты
+GET http://localhost:8000/api/recipe HTTP/1.1
+### Добавить новый рецепт
+POST http://localhost:8000/api/recipe/create HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Жареное яблоко",
+    "description": "Обжарьте яблоко",
+    "is_vegan": true,
+    "difficulty_level": 0,
+    "rating": 0
+}
+
+### Взять все продукты
+GET http://localhost:8000/api/product HTTP/1.1
+### Добавить новый продукт
+POST http://localhost:8000/api/product/create HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Яблоко",
+    "recipe" : 0
+}
