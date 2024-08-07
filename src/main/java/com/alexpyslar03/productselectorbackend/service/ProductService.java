@@ -11,10 +11,12 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
+    private final RecipeService recipeService;
     public Product create(ProductDTO dto) {
         return productRepository.save(Product.builder()
                 .name(dto.getName())
                 .image(dto.getImage())
+                        //.recipes(recipeService.readById(dto.getRecipeIds()))
                 .build());
     }
     public List<Product> readAll() {
