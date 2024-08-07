@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class ProductSelectorBackendApplication {
-
     public static void main(String[] args) {
-        SpringApplication.run(ProductSelectorBackendApplication.class, args);
+        SpringApplication.run(ProductSelectorBackendApplication.class);
     }
-
 }
