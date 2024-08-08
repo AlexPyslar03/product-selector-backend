@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.dto.UserDTO;
+import com.alexpyslar03.productselectorbackend.entity.Product;
 import com.alexpyslar03.productselectorbackend.entity.User;
 import com.alexpyslar03.productselectorbackend.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,9 @@ public class UserService {
     }
     public User readById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found - " + id));
+    }
+    public List<User> readByIds(List<Long> ids) {
+        return userRepository.findByIds(ids);
     }
     public User update(User user) {
         return userRepository.save(user);

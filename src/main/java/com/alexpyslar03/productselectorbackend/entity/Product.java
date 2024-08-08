@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,5 +22,5 @@ public class Product {
     private String name;
     private String image;
     @ManyToMany(mappedBy = "products")
-    private Set<Recipe> recipes = new HashSet<>();
+    private List<Recipe> recipes;
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -30,5 +31,5 @@ public class Recipe {
             joinColumns = { @JoinColumn(name = "product_id") },
             inverseJoinColumns = { @JoinColumn(name = "recipe_id") }
     )
-    private Set<Product> products = new HashSet<>();
+    private List<Product> products;
 }

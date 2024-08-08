@@ -2,6 +2,7 @@ package com.alexpyslar03.productselectorbackend.dto;
 
 import lombok.Data;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -12,5 +13,5 @@ public class RecipeDTO {
     private int difficulty_level;
     private Long rating;
     private String image;
-    private Set<Long> productIds;
+    private List<Long> productIds;
 }

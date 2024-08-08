@@ -25,6 +25,21 @@ public class ProductController {
         return mappingResponseListProduct(productService.readAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> readById(@PathVariable Long id) {
+        return mappingResponseProduct(productService.readById(id));
+    }
+
+    @GetMapping("/{ids}")
+    public ResponseEntity<List<Product>> readByIds(@PathVariable List<Long> ids) {
+        return mappingResponseListProduct(productService.readByIds(ids));
+    }
+
+    @GetMapping("/recipe/{id}")
+    public ResponseEntity<List<Product>> readByRecipeId(@PathVariable Long id) {
+        return mappingResponseListProduct(productService.readByRecipeId(id));
+    }
+
     @PutMapping
     public ResponseEntity<Product> update(@RequestBody Product product) {
         return mappingResponseProduct(productService.update(product));
