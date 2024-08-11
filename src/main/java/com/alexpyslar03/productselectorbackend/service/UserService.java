@@ -1,7 +1,6 @@
 package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.dto.UserDTO;
-import com.alexpyslar03.productselectorbackend.entity.Product;
 import com.alexpyslar03.productselectorbackend.entity.User;
 import com.alexpyslar03.productselectorbackend.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor

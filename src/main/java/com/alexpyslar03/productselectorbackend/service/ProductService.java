@@ -5,20 +5,22 @@ import com.alexpyslar03.productselectorbackend.entity.Product;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
-    private final RecipeService recipeService;
+    private final RecipeRepository recipeRepository;
     public Product create(ProductDTO dto) {
         return productRepository.save(Product.builder()
                 .name(dto.getName())
                 .image(dto.getImage())
-                .recipes(recipeService.readByIds(dto.getRecipeIds()))
+                .recipes(recipeRepository.findByIds(dto.getRecipeIds()))
                 .build());
     }
     public List<Product> readAll() {
@@ -31,7 +33,7 @@ public class ProductService {
         return productRepository.findByIds(ids);
     }
     public List<Product> readByRecipeId(Long id) {
-        return productRepository.findByRecipeId(id);
+        return productRepository.findByRecipesId(id);
     }
     public Product update(Product product) {
         return productRepository.save(product);

@@ -1,21 +1,22 @@
 package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.dto.RecipeDTO;
-import com.alexpyslar03.productselectorbackend.entity.Product;
 import com.alexpyslar03.productselectorbackend.entity.Recipe;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RecipeService {
     private final RecipeRepository recipeRepository;
-    private final ProductService productService;
+    private final ProductRepository productRepository;
     public Recipe create(RecipeDTO dto) {
         return recipeRepository.save(Recipe.builder()
                 .name(dto.getName())
@@ -24,7 +25,7 @@ public class RecipeService {
                 .difficulty_level(dto.getDifficulty_level())
                 .rating(dto.getRating())
                 .image(dto.getImage())
-                .products(productService.readByIds(dto.getProductIds()))
+                .products(productRepository.findByIds(dto.getProductIds()))
                 .build());
     }
     public List<Recipe> readAll() {
@@ -37,7 +38,7 @@ public class RecipeService {
         return recipeRepository.findByIds(ids);
     }
     public List<Recipe> readByProductId(Long id) {
-        return recipeRepository.findByProductId(id);
+        return recipeRepository.findByProductsId(id);
     }
     public Recipe update(Recipe recipe) {
         return recipeRepository.save(recipe);

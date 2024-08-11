@@ -21,6 +21,13 @@ public class Product {
     private Long id;
     private String name;
     private String image;
-    @ManyToMany(mappedBy = "products")
+    @ManyToMany(
+        cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+        },
+        fetch = FetchType.EAGER,
+        mappedBy = "products"
+    )
     private List<Recipe> recipes;
 }
