@@ -4,10 +4,12 @@ import com.alexpyslar03.productselectorbackend.dto.ProductDTO;
 import com.alexpyslar03.productselectorbackend.entity.Product;
 import com.alexpyslar03.productselectorbackend.service.ProductService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
@@ -17,45 +19,37 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<Product> create(@RequestBody ProductDTO dto) {
-        return mappingResponseProduct(productService.create(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(dto));
     }
 
     @GetMapping
     public ResponseEntity<List<Product>> readAll() {
-        return mappingResponseListProduct(productService.readAll());
+        return ResponseEntity.ok(productService.readAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> readById(@PathVariable Long id) {
-        return mappingResponseProduct(productService.readById(id));
+        return ResponseEntity.ok(productService.readById(id));
     }
 
-    @GetMapping("/{ids}")
-    public ResponseEntity<List<Product>> readByIds(@PathVariable List<Long> ids) {
-        return mappingResponseListProduct(productService.readByIds(ids));
+    @GetMapping("/batch")
+    public ResponseEntity<Set<Product>> readByIds(@RequestParam List<Long> ids) {
+        return ResponseEntity.ok(productService.readAllByIdIn(ids));
     }
 
     @GetMapping("/recipe/{id}")
     public ResponseEntity<List<Product>> readByRecipeId(@PathVariable Long id) {
-        return mappingResponseListProduct(productService.readByRecipeId(id));
+        return ResponseEntity.ok(productService.readByRecipeId(id));
     }
 
     @PutMapping
     public ResponseEntity<Product> update(@RequestBody Product product) {
-        return mappingResponseProduct(productService.update(product));
+        return ResponseEntity.ok(productService.update(product));
     }
 
     @DeleteMapping("/{id}")
-    public HttpStatus delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
-        return HttpStatus.OK;
-    }
-
-    private ResponseEntity<Product> mappingResponseProduct(Product product) {
-        return new ResponseEntity<>(product, HttpStatus.OK);
-    }
-
-    private ResponseEntity<List<Product>> mappingResponseListProduct(List<Product> products) {
-        return new ResponseEntity<>(products, HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
 }
