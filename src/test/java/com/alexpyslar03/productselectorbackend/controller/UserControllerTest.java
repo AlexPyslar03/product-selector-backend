@@ -3,84 +3,95 @@ package com.alexpyslar03.productselectorbackend.controller;
 import com.alexpyslar03.productselectorbackend.dto.UserDTO;
 import com.alexpyslar03.productselectorbackend.entity.User;
 import com.alexpyslar03.productselectorbackend.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
-@WebMvcTest(UserController.class)
 public class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private UserService userService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private UserController userController;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
-    void testCreateUser() throws Exception {
-        UserDTO userDTO = UserDTO.builder()
-                .name("John")
-                .surname("Doe")
-                .email("john.doe@example.com")
-                .password("password")
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .build();
-
-        User user = User.builder()
-                .name("John")
-                .surname("Doe")
-                .email("john.doe@example.com")
-                .password("password")
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .registrationDate(LocalDate.now())
-                .build();
+    public void testCreateUser() {
+        UserDTO dto = new UserDTO();
+        User user = new User();
 
         when(userService.create(any(UserDTO.class))).thenReturn(user);
 
-        mockMvc.perform(post("/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDTO)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("John"));
+        ResponseEntity<User> response = userController.create(dto);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
     @Test
-    void testReadAllUsers() throws Exception {
-        User user = User.builder()
-                .name("John")
-                .surname("Doe")
-                .email("john.doe@example.com")
-                .password("password")
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .registrationDate(LocalDate.now())
-                .build();
+    public void testReadAllUsers() {
+        User user = new User();
+        List<User> users = Collections.singletonList(user);
 
-        when(userService.readAll()).thenReturn(Collections.singletonList(user));
+        when(userService.readAll()).thenReturn(users);
 
-        mockMvc.perform(get("/user")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("John"));
+        ResponseEntity<List<User>> response = userController.readAll();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
     }
 
-    // Другие тесты, например, на получение по ID, обновление, удаление
+    @Test
+    public void testReadByIdUserFound() {
+        User user = new User();
+
+        when(userService.readById(anyLong())).thenReturn(user);
+
+        ResponseEntity<User> response = userController.readById(1L);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void testReadByIdUserNotFound() {
+        when(userService.readById(anyLong())).thenThrow(new RuntimeException("User not found - 1"));
+
+        ResponseEntity<User> response = userController.readById(1L);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateUser() {
+        User user = new User();
+
+        when(userService.update(any(User.class))).thenReturn(user);
+
+        ResponseEntity<User> response = userController.update(user);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void testDeleteUser() {
+        doNothing().when(userService).delete(anyLong());
+
+        ResponseEntity<Void> response = userController.delete(1L);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
 }

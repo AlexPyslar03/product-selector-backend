@@ -26,8 +26,9 @@ public class Product {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
+    @Lob
     @Column(name = "image")
-    private String image;
+    private byte[] image;
 
     @ManyToMany(
             fetch = FetchType.LAZY,

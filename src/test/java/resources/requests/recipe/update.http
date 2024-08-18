@@ -1,0 +1,13 @@
+PUT http://localhost:8080/recipe
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "Updated Vegetarian Pasta",
+  "description": "Updated description.",
+  "vegan": true,
+  "difficultyLevel": "EASY",
+  "rating": 4,
+  "image": "http://example.com/updated-vegetarian-pasta.png",
+  "productIds": [1, 9]
+}

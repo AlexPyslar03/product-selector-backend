@@ -2,6 +2,7 @@ package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.dto.ProductDTO;
 import com.alexpyslar03.productselectorbackend.entity.Product;
+import com.alexpyslar03.productselectorbackend.exception.ProductNotFoundException;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,27 +31,35 @@ public class ProductService {
 
     public Product readById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found - " + id));
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     public Set<Product> readAllByIdIn(List<Long> ids) {
-        return productRepository.findAllByIdIn(ids);
+        Set<Product> products = productRepository.findAllByIdIn(ids);
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("No products found for the provided IDs.");
+        }
+        return products;
     }
 
     public List<Product> readByRecipeId(Long id) {
-        return productRepository.findByRecipesId(id);
+        List<Product> products = productRepository.findByRecipesId(id);
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("No products found for the provided recipe ID - " + id);
+        }
+        return products;
     }
 
     public Product update(Product product) {
         if (!productRepository.existsById(product.getId())) {
-            throw new RuntimeException("Product not found - " + product.getId());
+            throw new ProductNotFoundException(product.getId());
         }
         return productRepository.save(product);
     }
 
     public void delete(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new RuntimeException("Product not found - " + id);
+            throw new ProductNotFoundException(id);
         }
         productRepository.deleteById(id);
     }

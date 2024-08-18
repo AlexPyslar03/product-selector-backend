@@ -13,6 +13,6 @@ public class RecipeDTO {
     private boolean vegan;
     private Recipe.DifficultyLevel difficultyLevel;
     private Long rating;
-    private String image;
+    private byte[] image;
     private List<Long> productIds;
 }

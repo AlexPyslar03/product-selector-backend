@@ -7,6 +7,5 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ProductSelectorBackendApplication {
     public static void main(String[] args) {
         SpringApplication.run(ProductSelectorBackendApplication.class);
-        System.out.println("Сервер запущен");
     }
 }

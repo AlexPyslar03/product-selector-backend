@@ -2,12 +2,11 @@ package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.dto.UserDTO;
 import com.alexpyslar03.productselectorbackend.entity.User;
+import com.alexpyslar03.productselectorbackend.exception.UserNotFoundException;
 import com.alexpyslar03.productselectorbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Set;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,23 +31,27 @@ public class UserService {
 
     public User readById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found - " + id));
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public List<User> readAllByIdIn(List<Long> ids) {
-        return userRepository.findAllByIdIn(ids);
+        List<User> users = userRepository.findAllByIdIn(ids);
+        if (users.isEmpty()) {
+            throw new UserNotFoundException("No users found for the provided IDs.");
+        }
+        return users;
     }
 
     public User update(User user) {
         if (!userRepository.existsById(user.getId())) {
-            throw new RuntimeException("User not found - " + user.getId());
+            throw new UserNotFoundException(user.getId());
         }
         return userRepository.save(user);
     }
 
     public void delete(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found - " + id);
+            throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
     }

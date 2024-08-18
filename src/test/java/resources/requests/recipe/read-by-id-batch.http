@@ -1,0 +1,1 @@
+GET http://localhost:8080/recipe/batch?ids=1,2,3

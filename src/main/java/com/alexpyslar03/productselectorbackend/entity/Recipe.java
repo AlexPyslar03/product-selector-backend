@@ -39,8 +39,9 @@ public class Recipe {
     @Column(name = "rating")
     private Long rating;
 
+    @Lob
     @Column(name = "image")
-    private String image;
+    private byte[] image;
 
     @ManyToMany(
             fetch = FetchType.LAZY,

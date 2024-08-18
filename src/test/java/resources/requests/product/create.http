@@ -1,0 +1,8 @@
+POST http://localhost:8081/products
+Content-Type: application/json
+
+{
+  "name": "Chocolate",
+  "image": "http://example.com/chocolate.png",
+  "recipeIds": [0]
+}

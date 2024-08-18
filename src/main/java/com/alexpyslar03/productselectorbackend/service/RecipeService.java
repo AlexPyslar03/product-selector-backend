@@ -2,6 +2,7 @@ package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.dto.RecipeDTO;
 import com.alexpyslar03.productselectorbackend.entity.Recipe;
+import com.alexpyslar03.productselectorbackend.exception.RecipeNotFoundException;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,27 +35,35 @@ public class RecipeService {
 
     public Recipe readById(Long id) {
         return recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found - " + id));
+                .orElseThrow(() -> new RecipeNotFoundException(id));
     }
 
     public Set<Recipe> readAllByIdIn(List<Long> ids) {
-        return recipeRepository.findAllByIdIn(ids);
+        Set<Recipe> recipes = recipeRepository.findAllByIdIn(ids);
+        if (recipes.isEmpty()) {
+            throw new RecipeNotFoundException("No recipes found for the provided IDs.");
+        }
+        return recipes;
     }
 
     public List<Recipe> readByProductId(Long id) {
-        return recipeRepository.findByProductsId(id);
+        List<Recipe> recipes = recipeRepository.findByProductsId(id);
+        if (recipes.isEmpty()) {
+            throw new RecipeNotFoundException("No recipes found for the provided product ID - " + id);
+        }
+        return recipes;
     }
 
     public Recipe update(Recipe recipe) {
         if (!recipeRepository.existsById(recipe.getId())) {
-            throw new RuntimeException("Recipe not found - " + recipe.getId());
+            throw new RecipeNotFoundException(recipe.getId());
         }
         return recipeRepository.save(recipe);
     }
 
     public void delete(Long id) {
         if (!recipeRepository.existsById(id)) {
-            throw new RuntimeException("Recipe not found - " + id);
+            throw new RecipeNotFoundException(id);
         }
         recipeRepository.deleteById(id);
     }
