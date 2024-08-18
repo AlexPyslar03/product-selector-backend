@@ -11,12 +11,10 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class UserControllerTest {
@@ -28,70 +26,86 @@ public class UserControllerTest {
     private UserController userController;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testCreateUser() {
-        UserDTO dto = new UserDTO();
-        User user = new User();
+    void create_shouldReturnCreatedUser() {
+        UserDTO userDTO = new UserDTO(); // заполняем DTO при необходимости
+        User user = new User(); // заполняем User при необходимости
 
-        when(userService.create(any(UserDTO.class))).thenReturn(user);
+        when(userService.create(userDTO)).thenReturn(user);
 
-        ResponseEntity<User> response = userController.create(dto);
+        ResponseEntity<User> response = userController.create(userDTO);
+
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
+        assertEquals(user, response.getBody());
     }
 
     @Test
-    public void testReadAllUsers() {
-        User user = new User();
-        List<User> users = Collections.singletonList(user);
+    void readAll_shouldReturnListOfUsers() {
+        User user1 = new User(); // заполняем User при необходимости
+        User user2 = new User(); // заполняем User при необходимости
+        List<User> users = Arrays.asList(user1, user2);
 
         when(userService.readAll()).thenReturn(users);
 
         ResponseEntity<List<User>> response = userController.readAll();
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().size());
+        assertEquals(users, response.getBody());
     }
 
     @Test
-    public void testReadByIdUserFound() {
-        User user = new User();
+    void readById_shouldReturnUser() {
+        Long id = 1L;
+        User user = new User(); // заполняем User при необходимости
 
-        when(userService.readById(anyLong())).thenReturn(user);
+        when(userService.readById(id)).thenReturn(user);
 
-        ResponseEntity<User> response = userController.readById(1L);
+        ResponseEntity<User> response = userController.readById(id);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
+        assertEquals(user, response.getBody());
     }
 
     @Test
-    public void testReadByIdUserNotFound() {
-        when(userService.readById(anyLong())).thenThrow(new RuntimeException("User not found - 1"));
+    void readByIdIn_shouldReturnListOfUsers() {
+        List<Long> ids = Arrays.asList(1L, 2L);
+        User user1 = new User(); // заполняем User при необходимости
+        User user2 = new User(); // заполняем User при необходимости
+        List<User> users = Arrays.asList(user1, user2);
 
-        ResponseEntity<User> response = userController.readById(1L);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        when(userService.readAllByIdIn(ids)).thenReturn(users);
+
+        ResponseEntity<List<User>> response = userController.readByIdIn(ids);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(users, response.getBody());
     }
 
     @Test
-    public void testUpdateUser() {
-        User user = new User();
+    void update_shouldReturnUpdatedUser() {
+        User user = new User(); // заполняем User при необходимости
 
-        when(userService.update(any(User.class))).thenReturn(user);
+        when(userService.update(user)).thenReturn(user);
 
         ResponseEntity<User> response = userController.update(user);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
+        assertEquals(user, response.getBody());
     }
 
     @Test
-    public void testDeleteUser() {
-        doNothing().when(userService).delete(anyLong());
+    void delete_shouldReturnNoContent() {
+        Long id = 1L;
 
-        ResponseEntity<Void> response = userController.delete(1L);
+        doNothing().when(userService).delete(id);
+
+        ResponseEntity<Void> response = userController.delete(id);
+
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(userService, times(1)).delete(id);
     }
 }

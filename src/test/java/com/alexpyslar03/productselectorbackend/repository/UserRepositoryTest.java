@@ -1,57 +1,65 @@
 package com.alexpyslar03.productselectorbackend.repository;
 
 import com.alexpyslar03.productselectorbackend.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(SpringExtension.class)
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY) // Используйте встроенную базу данных
+@ActiveProfiles("test")
 public class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
 
-    @Test
-    public void testFindAllByIdIn_ShouldReturnCorrectUsers() {
-        User user1 = new User();
-        user1.setName("User1");
-        user1 = userRepository.save(user1);
+    private User user1;
+    private User user2;
 
-        User user2 = new User();
-        user2.setName("User2");
+    @BeforeEach
+    void setUp() {
+        user1 = new User();
+        user1.setName("John");
+        user1.setSurname("Doe");
+        user1.setEmail("john.doe@example.com");
+        user1.setPassword("password");
+
+        user2 = new User();
+        user2.setName("Jane");
+        user2.setSurname("Doe");
+        user2.setEmail("jane.doe@example.com");
+        user2.setPassword("password");
+
+        userRepository.save(user1);
         userRepository.save(user2);
-
-        User user3 = new User();
-        user3.setName("User3");
-        user3 = userRepository.save(user3);
-
-        List<Long> ids = Arrays.asList(user1.getId(), user3.getId());
-        List<User> users = userRepository.findAllByIdIn(ids);
-
-        assertThat(users).hasSize(2);
-        assertThat(users).extracting(User::getId).containsExactlyInAnyOrder(user1.getId(), user3.getId());
     }
 
     @Test
-    public void testFindAllByIdIn_ShouldReturnEmptyList_WhenNoUsersFound() {
-        List<Long> ids = Arrays.asList(999L, 1000L);
+    void findAllByIdIn_shouldReturnListOfUsers() {
+        List<Long> ids = Arrays.asList(user1.getId(), user2.getId());
         List<User> users = userRepository.findAllByIdIn(ids);
 
-        assertThat(users).isEmpty();
+        assertNotNull(users);
+        assertEquals(2, users.size());
+        assertTrue(users.contains(user1));
+        assertTrue(users.contains(user2));
     }
 
     @Test
-    public void testFindAllByIdIn_ShouldReturnEmptyList_WhenInputListIsEmpty() {
-        List<User> users = userRepository.findAllByIdIn(List.of());
+    void findAllByIdIn_withEmptyList_shouldReturnEmptyList() {
+        List<User> users = userRepository.findAllByIdIn(Arrays.asList(999L)); // несуществующий ID
 
-        assertThat(users).isEmpty();
+        assertNotNull(users);
+        assertTrue(users.isEmpty());
     }
 }

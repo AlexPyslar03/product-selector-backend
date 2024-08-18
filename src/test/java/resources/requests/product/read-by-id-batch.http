@@ -1,1 +1,1 @@
-GET http://localhost:8081/products/batch?ids=1,2,3
+GET http://localhost:8081/product/batch?ids=1,2,3
