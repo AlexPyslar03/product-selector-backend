@@ -1,11 +1,6 @@
 plugins {
-    // Плагин для поддержки Java
     id 'java'
-
-    // Плагин для поддержки Spring Boot
     id 'org.springframework.boot' version '3.3.2'
-
-    // Плагин для управления зависимостями через Spring
     id 'io.spring.dependency-management' version '1.1.6'
 }
 
@@ -14,20 +9,18 @@ version = '0.1.0'  // Версия проекта
 
 java {
     toolchain {
-        // Настройка версии языка Java, используемой в проекте
         languageVersion = JavaLanguageVersion.of(22)
     }
 }
 
 repositories {
-    // Хранилище зависимостей Maven Central
     mavenCentral()
 }
 
 dependencies {
     // Зависимости для Spring Boot
-    implementation 'org.springframework.boot:spring-boot-starter-web'    // Для создания веб-приложений
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Для работы с JPA и Hibernate
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // Драйвер PostgreSQL для подключения к базе данных
     runtimeOnly 'org.postgresql:postgresql'
@@ -36,18 +29,16 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // Зависимости для тестирования
-
     // JUnit 5 (Jupiter) - основной API и механизм выполнения тестов
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'  // Движок для выполнения тестов JUnit
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
 
     // H2 Database - используется как база данных в памяти для тестирования
     testImplementation 'com.h2database:h2'
 
     // Mockito для создания и управления mock-объектами в тестах
     testImplementation 'org.mockito:mockito-core:5.4.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'  // Интеграция Mockito с JUnit Jupiter
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
 
     // Spring Boot Test Starter - набор библиотек для тестирования Spring приложений
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -60,6 +51,5 @@ dependencies {
 }
 
 tasks.named('test') {
-    // Настройка выполнения тестов с использованием платформы JUnit
     useJUnitPlatform()
 }
