@@ -1,5 +1,6 @@
 name: CI  # Имя рабочего процесса (workflow)
 
+# Определяем, когда запускать workflow
 on:
   push:  # Запускать при push в ветку main
     branches: [ "main" ]
@@ -33,7 +34,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build and test with Gradle  # Собираем проект и запускаем тесты
-        run: ./gradlew clean build jacocoTestReport
+        run: ./gradlew clean build
 
       - name: Archive test reports  # Архивируем и сохраняем отчеты о тестировании
         if: always()  # Этот шаг выполняется всегда, даже если предыдущие шаги завершились неудачей
@@ -41,24 +42,3 @@ jobs:
         with:
           name: test-reports
           path: build/reports/tests/test  # Путь к тестовым отчетам
-
-      - name: Archive JaCoCo coverage report  # Архивируем отчеты о покрытии кода
-        if: always()  # Этот шаг выполняется всегда
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-reports
-          path: build/reports/jacoco/test  # Путь к отчетам JaCoCo
-
-      - name: Publish Test Results  # Публикация результатов тестирования (JUnit формат)
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: junit-results
-          path: build/test-results/test  # Путь к JUnit отчетам
-
-      - name: Publish coverage to Codecov  # Публикация отчета о покрытии кода в Codecov (необязательно)
-        if: success()
-        uses: codecov/codecov-action@v3
-        with:
-          files: build/reports/jacoco/test/jacocoTestReport.xml  # Путь к XML отчету JaCoCo
-          fail_ci_if_error: true  # Прерывать выполнение, если публикация провалена
