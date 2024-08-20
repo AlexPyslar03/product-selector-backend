@@ -1,27 +1,28 @@
-name: CI
+name: CI  # Имя рабочего процесса (workflow)
 
+# Определяем, когда запускать workflow
 on:
-  push:
+  push:  # Запускать при push в ветку main
     branches: [ "main" ]
-  pull_request:
+  pull_request:  # Запускать при pull request в ветку main
     branches: [ "main" ]
 
 jobs:
   test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Запускаем тесты на последней версии Ubuntu
 
     steps:
-      - name: Checkout code
+      - name: Checkout code  # Клонируем репозиторий
         uses: actions/checkout@v3
 
-      - name: Set up JDK 22
+      - name: Set up JDK 22  # Устанавливаем JDK версии 22
         uses: actions/setup-java@v3
         with:
           java-version: '22'
-          distribution: 'temurin'
+          distribution: 'temurin'  # Используем дистрибутив Temurin
 
-      - name: Cache Gradle packages
+      - name: Cache Gradle packages  # Кэшируем зависимости Gradle для ускорения сборки
         uses: actions/cache@v3
         with:
           path: ~/.gradle/caches
@@ -29,8 +30,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Grant execute permission for Gradle wrapper
+      - name: Grant execute permission for Gradle wrapper  # Даем права на выполнение Gradle wrapper
         run: chmod +x ./gradlew
 
-      - name: Build and test with Gradle
+      - name: Build and test with Gradle  # Собираем проект и запускаем тесты
         run: ./gradlew clean build
+
+      - name: Archive test reports  # Архивируем и сохраняем отчеты о тестировании
+        if: always()  # Этот шаг выполняется всегда, даже если предыдущие шаги завершились неудачей
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: build/reports/tests/test  # Путь к тестовым отчетам
