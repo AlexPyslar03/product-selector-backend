@@ -1,14 +1,13 @@
-server.port: 8081
-
+server.port: 8081 # Порт, на котором будет работать сервер
 spring:
-  application.name: product-selector-backend
+  application.name: product-selector-backend # Имя приложения
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: 123
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres # URL для подключения к базе данных PostgresSQL
+    username: postgres # Имя пользователя для подключения к базе данных
+    password: 123 # Пароль для подключения к базе данных
+    driver-class-name: org.postgresql.Driver # Класс драйвера для PostgresSQL
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate.ddl-auto: update
-    show-sql: true
-    properties.hibernate.format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect # Платформа базы данных для JPA (Hibernate)
+    hibernate.ddl-auto: update # update: обновляет схему без удаления данных
+    show-sql: true # Включает логирование SQL-запросов в консоль
+    properties.hibernate.format_sql: true # Форматирует SQL-запросы в логах для лучшей читаемости
