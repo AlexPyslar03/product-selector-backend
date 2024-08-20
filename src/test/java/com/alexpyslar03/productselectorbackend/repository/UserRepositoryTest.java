@@ -31,6 +31,7 @@ public class UserRepositoryTest {
         user1 = userRepository.save(User.builder()
                 .name("John")
                 .surname("Doe")
+                .email("john.doe@example.com")
                 .password("password123")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .registrationDate(LocalDate.of(1990, 1, 2))
