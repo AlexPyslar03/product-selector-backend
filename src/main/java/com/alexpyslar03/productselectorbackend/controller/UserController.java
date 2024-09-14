@@ -1,8 +1,7 @@
 package com.alexpyslar03.productselectorbackend.controller;
 
-import com.alexpyslar03.productselectorbackend.dto.UserDTO;
-import com.alexpyslar03.productselectorbackend.entity.User;
-import com.alexpyslar03.productselectorbackend.exception.UserNotFoundException;
+import com.alexpyslar03.productselectorbackend.domain.dto.UserDTO;
+import com.alexpyslar03.productselectorbackend.domain.entity.User;
 import com.alexpyslar03.productselectorbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +28,7 @@ public class UserController {
     /**
      * Создает нового пользователя.
      *
-     * @param dto DTO с данными нового пользователя.
+     * @param user User с данными нового пользователя.
      * @return Ответ с созданным пользователем и статусом 201 Created.
      */
     @Operation(summary = "Создание нового пользователя", description = "Создает нового пользователя и возвращает его.")
@@ -39,8 +38,8 @@ public class UserController {
     })
     @PostMapping
     public ResponseEntity<User> create(
-            @Parameter(description = "DTO с данными нового пользователя", required = true) @RequestBody UserDTO dto) {
-        User createdUser = userService.create(dto);
+            @Parameter(description = "DTO с данными нового пользователя", required = true) @RequestBody User user) {
+        User createdUser = userService.create(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
@@ -64,7 +63,7 @@ public class UserController {
      *
      * @param id Идентификатор пользователя.
      * @return Ответ с пользователем и статусом 200 OK.
-     * @throws UserNotFoundException Если пользователь с указанным идентификатором не найден.
+     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
     @Operation(summary = "Получение пользователя по ID", description = "Возвращает пользователя по указанному ID.")
     @ApiResponses(value = {
@@ -83,7 +82,7 @@ public class UserController {
      *
      * @param ids Список идентификаторов пользователей.
      * @return Ответ со списком пользователей и статусом 200 OK.
-     * @throws UserNotFoundException Если ни один из пользователей с указанными идентификаторами не найден.
+     * @throws RuntimeException Если ни один из пользователей с указанными идентификаторами не найден.
      */
     @Operation(summary = "Получение списка пользователей по ID", description = "Возвращает список пользователей по указанным ID.")
     @ApiResponses(value = {
@@ -102,7 +101,7 @@ public class UserController {
      *
      * @param user Пользователь с обновленными данными.
      * @return Ответ с обновленным пользователем и статусом 200 OK.
-     * @throws UserNotFoundException Если пользователь с указанным идентификатором не найден.
+     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
     @Operation(summary = "Обновление данных пользователя", description = "Обновляет данные пользователя и возвращает его.")
     @ApiResponses(value = {
@@ -121,7 +120,7 @@ public class UserController {
      *
      * @param id Идентификатор пользователя для удаления.
      * @return Ответ со статусом 204 No Content.
-     * @throws UserNotFoundException Если пользователь с указанным идентификатором не найден.
+     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
     @Operation(summary = "Удаление пользователя по ID", description = "Удаляет пользователя по указанному ID.")
     @ApiResponses(value = {

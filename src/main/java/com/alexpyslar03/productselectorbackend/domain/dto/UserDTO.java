@@ -1,6 +1,6 @@
-package com.alexpyslar03.productselectorbackend.dto;
+package com.alexpyslar03.productselectorbackend.domain.dto;
 
-import com.alexpyslar03.productselectorbackend.entity.User;
+import com.alexpyslar03.productselectorbackend.domain.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,12 +21,7 @@ public class UserDTO {
     /**
      * Имя пользователя.
      */
-    private String name;
-
-    /**
-     * Фамилия пользователя.
-     */
-    private String surname;
+    private String username;
 
     /**
      * Адрес электронной почты пользователя.
@@ -56,5 +51,5 @@ public class UserDTO {
      * Уровень доступа пользователя.
      * Использует перечисление AccessLevel из сущности User.
      */
-    private User.AccessLevel accessLevel;
+    private Role role;
 }

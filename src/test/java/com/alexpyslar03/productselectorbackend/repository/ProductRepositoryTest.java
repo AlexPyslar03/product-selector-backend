@@ -1,7 +1,7 @@
 package com.alexpyslar03.productselectorbackend.repository;
 
-import com.alexpyslar03.productselectorbackend.entity.Product;
-import com.alexpyslar03.productselectorbackend.entity.Recipe;
+import com.alexpyslar03.productselectorbackend.domain.entity.Product;
+import com.alexpyslar03.productselectorbackend.domain.entity.Recipe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

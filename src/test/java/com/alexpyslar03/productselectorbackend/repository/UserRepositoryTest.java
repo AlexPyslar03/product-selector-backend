@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.repository;
 
-import com.alexpyslar03.productselectorbackend.entity.User;
+import com.alexpyslar03.productselectorbackend.domain.entity.Role;
+import com.alexpyslar03.productselectorbackend.domain.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,33 +30,30 @@ public class UserRepositoryTest {
     @BeforeEach
     public void setUp() {
         user1 = userRepository.save(User.builder()
-                .name("John")
-                .surname("Doe")
+                .username("John")
                 .email("john.doe@example.com")
                 .password("password123")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .registrationDate(LocalDate.of(1990, 1, 2))
-                .accessLevel(User.AccessLevel.USER)
+                .role(Role.ROLE_USER)
                 .build());
 
         user2 = userRepository.save(User.builder()
-                .name("Jane")
-                .surname("Doe")
+                .username("Jane")
                 .email("jane.doe@example.com")
                 .password("password123")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .registrationDate(LocalDate.of(1990, 1, 2))
-                .accessLevel(User.AccessLevel.USER)
+                .role(Role.ROLE_USER)
                 .build());
 
         user3 = userRepository.save(User.builder()
-                .name("Jim")
-                .surname("Beam")
+                .username("Jim")
                 .email("jim.beam@example.com")
                 .password("password123")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .registrationDate(LocalDate.of(1990, 1, 2))
-                .accessLevel(User.AccessLevel.USER)
+                .role(Role.ROLE_USER)
                 .build());
     }
 

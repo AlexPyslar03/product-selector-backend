@@ -1,8 +1,7 @@
 package com.alexpyslar03.productselectorbackend.service;
 
-import com.alexpyslar03.productselectorbackend.dto.ProductDTO;
-import com.alexpyslar03.productselectorbackend.entity.Product;
-import com.alexpyslar03.productselectorbackend.exception.ProductNotFoundException;
+import com.alexpyslar03.productselectorbackend.domain.dto.ProductDTO;
+import com.alexpyslar03.productselectorbackend.domain.entity.Product;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
@@ -60,11 +59,11 @@ public class ProductService {
      *
      * @param id Идентификатор продукта.
      * @return Продукт с указанным идентификатором.
-     * @throws ProductNotFoundException Если продукт с указанным идентификатором не найден.
+     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
      */
     public Product readById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(String.format("Продукт с идентификатором %d не найден.", id)));
+                .orElseThrow(() -> new RuntimeException(String.format("Продукт с идентификатором %d не найден.", id)));
         logger.info("Продукт с ID {} найден.", id);
         return product;
     }
@@ -75,12 +74,12 @@ public class ProductService {
      *
      * @param ids Список идентификаторов продуктов.
      * @return Набор продуктов с указанными идентификаторами.
-     * @throws ProductNotFoundException Если продукты с указанными идентификаторами не найдены.
+     * @throws RuntimeException Если продукты с указанными идентификаторами не найдены.
      */
     public Set<Product> readAllByIdIn(List<Long> ids) {
         Set<Product> products = productRepository.findAllByIdIn(ids);
         if (products.isEmpty()) {
-            throw new ProductNotFoundException("Не найдено продуктов с указанными идентификаторами.");
+            throw new RuntimeException("Не найдено продуктов с указанными идентификаторами.");
         }
         logger.info("Найдено {} продуктов по указанным ID.", products.size());
         return products;
@@ -92,12 +91,12 @@ public class ProductService {
      *
      * @param id Идентификатор рецепта.
      * @return Список продуктов, связанных с указанным рецептом.
-     * @throws ProductNotFoundException Если продукты для указанного рецепта не найдены.
+     * @throws RuntimeException Если продукты для указанного рецепта не найдены.
      */
     public List<Product> readByRecipeId(Long id) {
         List<Product> products = productRepository.findByRecipesId(id);
         if (products.isEmpty()) {
-            throw new ProductNotFoundException(String.format("Продукты для рецепта с идентификатором %d не найдены.", id));
+            throw new RuntimeException(String.format("Продукты для рецепта с идентификатором %d не найдены.", id));
         }
         logger.info("Найдено {} продуктов для рецепта с ID {}.", products.size(), id);
         return products;
@@ -109,12 +108,12 @@ public class ProductService {
      *
      * @param ids Список идентификаторов рецептов.
      * @return Список продуктов, связанных с указанными рецептами.
-     * @throws ProductNotFoundException Если продукты для указанных рецептов не найдены.
+     * @throws RuntimeException Если продукты для указанных рецептов не найдены.
      */
     public List<Product> readByRecipeIdIn(List<Long> ids) {
         List<Product> products = productRepository.findByRecipesIdIn(ids);
         if (products.isEmpty()) {
-            throw new ProductNotFoundException(String.format("Продукты для рецептов с идентификаторами %s не найдены.", ids));
+            throw new RuntimeException(String.format("Продукты для рецептов с идентификаторами %s не найдены.", ids));
         }
         logger.info("Найдено {} продуктов для рецептов с ID {}.", products.size(), ids);
         return products;
@@ -126,11 +125,11 @@ public class ProductService {
      *
      * @param product Продукт с обновленными данными.
      * @return Обновленный продукт.
-     * @throws ProductNotFoundException Если продукт с указанным идентификатором не найден.
+     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
      */
     public Product update(Product product) {
         if (!productRepository.existsById(product.getId())) {
-            throw new ProductNotFoundException(String.format("Невозможно обновить. Продукт с идентификатором %d не найден.", product.getId()));
+            throw new RuntimeException(String.format("Невозможно обновить. Продукт с идентификатором %d не найден.", product.getId()));
         }
         Product updatedProduct = productRepository.save(product);
         logger.info("Продукт с ID {} успешно обновлен.", product.getId());
@@ -142,11 +141,11 @@ public class ProductService {
      * Если продукт с указанным идентификатором не найден, выбрасывается исключение ProductNotFoundException.
      *
      * @param id Идентификатор продукта для удаления.
-     * @throws ProductNotFoundException Если продукт с указанным идентификатором не найден.
+     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
      */
     public void delete(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(String.format("Невозможно удалить. Продукт с идентификатором %d не найден.", id));
+            throw new RuntimeException(String.format("Невозможно удалить. Продукт с идентификатором %d не найден.", id));
         }
         productRepository.deleteById(id);
         logger.info("Продукт с ID {} успешно удален.", id);

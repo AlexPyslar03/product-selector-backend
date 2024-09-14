@@ -1,12 +1,12 @@
 package com.alexpyslar03.productselectorbackend.service;
 
-import com.alexpyslar03.productselectorbackend.dto.UserDTO;
-import com.alexpyslar03.productselectorbackend.entity.User;
-import com.alexpyslar03.productselectorbackend.exception.UserNotFoundException;
+import com.alexpyslar03.productselectorbackend.domain.entity.User;
 import com.alexpyslar03.productselectorbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,15 +29,14 @@ public class UserService {
      * @param dto DTO с данными нового пользователя.
      * @return Сообщение о создании пользователя и сам созданный пользователь.
      */
-    public User create(UserDTO dto) {
+    public User create(User dto) {
         User user = User.builder()
-                .name(dto.getName())
-                .surname(dto.getSurname())
+                .username(dto.getUsername())
                 .email(dto.getEmail())
                 .password(dto.getPassword())
                 .birthDate(dto.getBirthDate())
                 .registrationDate(dto.getRegistrationDate())
-                .accessLevel(dto.getAccessLevel())
+                .role(dto.getRole())
                 .build();
         User savedUser = userRepository.save(user);
         logger.info("Пользователь с ID {} успешно создан.", savedUser.getId());
@@ -61,11 +60,11 @@ public class UserService {
      *
      * @param id Идентификатор пользователя.
      * @return Пользователь с указанным идентификатором.
-     * @throws UserNotFoundException Если пользователь с указанным идентификатором не найден.
+     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
     public User readById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(String.format("Пользователь с идентификатором %d не найден.", id)));
+                .orElseThrow(() -> new RuntimeException(String.format("Пользователь с идентификатором %d не найден.", id)));
         logger.info("Пользователь с ID {} найден.", id);
         return user;
     }
@@ -76,15 +75,47 @@ public class UserService {
      *
      * @param ids Список идентификаторов пользователей.
      * @return Список пользователей с указанными идентификаторами.
-     * @throws UserNotFoundException Если пользователи с указанными идентификаторами не найдены.
+     * @throws RuntimeException Если пользователи с указанными идентификаторами не найдены.
      */
     public List<User> readAllByIdIn(List<Long> ids) {
         List<User> users = userRepository.findAllByIdIn(ids);
         if (users.isEmpty()) {
-            throw new UserNotFoundException("Не найдено пользователей с указанными идентификаторами.");
+            throw new RuntimeException("Не найдено пользователей с указанными идентификаторами.");
         }
         logger.info("Найдено {} пользователей по указанным ID.", users.size());
         return users;
+    }
+
+    /**
+     * Получение пользователя по имени пользователя
+     *
+     * @return пользователь
+     */
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+    }
+
+    /**
+     * Получение пользователя по имени пользователя
+     * <p>
+     * Нужен для Spring Security
+     *
+     * @return пользователь
+     */
+    public UserDetailsService userDetailsService() {
+        return this::getByUsername;
+    }
+
+    /**
+     * Получение текущего пользователя
+     *
+     * @return текущий пользователь
+     */
+    public User getCurrentUser() {
+        // Получение имени пользователя из контекста Spring Security
+        var username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return getByUsername(username);
     }
 
     /**
@@ -93,11 +124,11 @@ public class UserService {
      *
      * @param user Пользователь с обновленными данными.
      * @return Обновленный пользователь.
-     * @throws UserNotFoundException Если пользователь с указанным идентификатором не найден.
+     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
     public User update(User user) {
         if (!userRepository.existsById(user.getId())) {
-            throw new UserNotFoundException(String.format("Невозможно обновить. Пользователь с идентификатором %d не найден.", user.getId()));
+            throw new RuntimeException(String.format("Невозможно обновить. Пользователь с идентификатором %d не найден.", user.getId()));
         }
         User updatedUser = userRepository.save(user);
         logger.info("Пользователь с ID {} успешно обновлен.", user.getId());
@@ -109,11 +140,11 @@ public class UserService {
      * Если пользователь с указанным идентификатором не найден, выбрасывается исключение UserNotFoundException.
      *
      * @param id Идентификатор пользователя для удаления.
-     * @throws UserNotFoundException Если пользователь с указанным идентификатором не найден.
+     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
     public void delete(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException(String.format("Невозможно удалить. Пользователь с идентификатором %d не найден.", id));
+            throw new RuntimeException(String.format("Невозможно удалить. Пользователь с идентификатором %d не найден.", id));
         }
         userRepository.deleteById(id);
         logger.info("Пользователь с ID {} успешно удален.", id);

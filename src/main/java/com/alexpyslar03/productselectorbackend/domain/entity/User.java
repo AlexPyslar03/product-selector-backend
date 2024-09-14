@@ -1,9 +1,14 @@
-package com.alexpyslar03.productselectorbackend.entity;
+package com.alexpyslar03.productselectorbackend.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Сущность, представляющая пользователя в базе данных.
@@ -14,7 +19,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User implements UserDetails {
 
     /**
      * Уникальный идентификатор пользователя.
@@ -30,15 +35,8 @@ public class User {
      * Имя пользователя.
      * Не может быть null.
      */
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    /**
-     * Фамилия пользователя.
-     * Не может быть null.
-     */
-    @Column(name = "surname", nullable = false)
-    private String surname;
+    @Column(name = "username",  nullable = false, unique = true)
+    private String username;
 
     /**
      * Адрес электронной почты пользователя.
@@ -74,15 +72,31 @@ public class User {
      * По умолчанию установлен уровень доступа USER.
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "access_level", nullable = false)
-    private AccessLevel accessLevel = AccessLevel.USER;
+    @Column(name = "role", nullable = false)
+    private Role role;
 
-    /**
-     * Перечисление уровней доступа пользователей.
-     */
-    public enum AccessLevel {
-        USER,        // Обычный пользователь
-        ADMIN,       // Администратор
-        SUPER_ADMIN  // Супер администратор
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

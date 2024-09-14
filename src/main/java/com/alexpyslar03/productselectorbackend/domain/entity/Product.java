@@ -1,4 +1,4 @@
-package com.alexpyslar03.productselectorbackend.entity;
+package com.alexpyslar03.productselectorbackend.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

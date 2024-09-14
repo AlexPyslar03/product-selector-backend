@@ -1,8 +1,7 @@
 package com.alexpyslar03.productselectorbackend.controller;
 
-import com.alexpyslar03.productselectorbackend.dto.RecipeDTO;
-import com.alexpyslar03.productselectorbackend.entity.Recipe;
-import com.alexpyslar03.productselectorbackend.exception.RecipeNotFoundException;
+import com.alexpyslar03.productselectorbackend.domain.dto.RecipeDTO;
+import com.alexpyslar03.productselectorbackend.domain.entity.Recipe;
 import com.alexpyslar03.productselectorbackend.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,7 +64,7 @@ public class RecipeController {
      *
      * @param id Идентификатор рецепта.
      * @return Ответ с рецептом и статусом 200 OK.
-     * @throws RecipeNotFoundException Если рецепт с указанным идентификатором не найден.
+     * @throws RuntimeException Если рецепт с указанным идентификатором не найден.
      */
     @Operation(summary = "Получение рецепта по ID", description = "Возвращает рецепт по указанному ID.")
     @ApiResponses(value = {
@@ -84,7 +83,7 @@ public class RecipeController {
      *
      * @param ids Список идентификаторов рецептов.
      * @return Ответ с набором рецептов и статусом 200 OK.
-     * @throws RecipeNotFoundException Если ни один из рецептов с указанными идентификаторами не найден.
+     * @throws RuntimeException Если ни один из рецептов с указанными идентификаторами не найден.
      */
     @Operation(summary = "Получение рецептов по ID", description = "Возвращает набор рецептов по указанным ID.")
     @ApiResponses(value = {
@@ -103,7 +102,7 @@ public class RecipeController {
      *
      * @param id Идентификатор продукта.
      * @return Ответ со списком рецептов и статусом 200 OK.
-     * @throws RecipeNotFoundException Если рецепты для указанного продукта не найдены.
+     * @throws RuntimeException Если рецепты для указанного продукта не найдены.
      */
     @Operation(summary = "Получение рецептов по ID продукта", description = "Возвращает список рецептов по указанному ID продукта.")
     @ApiResponses(value = {
@@ -122,7 +121,7 @@ public class RecipeController {
      *
      * @param ids Список идентификаторов продуктов.
      * @return Ответ со списком рецептов и статусом 200 OK.
-     * @throws RecipeNotFoundException Если рецепты для указанных продуктов не найдены.
+     * @throws RuntimeException Если рецепты для указанных продуктов не найдены.
      */
     @Operation(summary = "Получение рецептов по списку ID продуктов", description = "Возвращает список рецептов по списку идентификаторов продуктов.")
     @ApiResponses(value = {
@@ -141,7 +140,7 @@ public class RecipeController {
      *
      * @param recipe Рецепт с обновленными данными.
      * @return Ответ с обновленным рецептом и статусом 200 OK.
-     * @throws RecipeNotFoundException Если рецепт с указанным идентификатором не найден.
+     * @throws RuntimeException Если рецепт с указанным идентификатором не найден.
      */
     @Operation(summary = "Обновление данных рецепта", description = "Обновляет данные рецепта и возвращает его.")
     @ApiResponses(value = {
@@ -160,7 +159,7 @@ public class RecipeController {
      *
      * @param id Идентификатор рецепта для удаления.
      * @return Ответ со статусом 204 No Content.
-     * @throws RecipeNotFoundException Если рецепт с указанным идентификатором не найден.
+     * @throws RuntimeException Если рецепт с указанным идентификатором не найден.
      */
     @Operation(summary = "Удаление рецепта по ID", description = "Удаляет рецепт по указанному ID.")
     @ApiResponses(value = {

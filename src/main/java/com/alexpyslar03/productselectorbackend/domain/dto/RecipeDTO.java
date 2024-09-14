@@ -1,6 +1,6 @@
-package com.alexpyslar03.productselectorbackend.dto;
+package com.alexpyslar03.productselectorbackend.domain.dto;
 
-import com.alexpyslar03.productselectorbackend.entity.Recipe;
+import com.alexpyslar03.productselectorbackend.domain.entity.Recipe;
 import lombok.Data;
 
 import java.util.List;
