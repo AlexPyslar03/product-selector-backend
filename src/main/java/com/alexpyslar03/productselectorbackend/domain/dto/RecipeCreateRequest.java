@@ -10,7 +10,7 @@ import java.util.List;
  * Используется для обмена данными между слоями приложения и внешними системами.
  */
 @Data
-public class RecipeDTO {
+public class RecipeCreateRequest {
 
     /**
      * Название рецепта.

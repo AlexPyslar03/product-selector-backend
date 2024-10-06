@@ -1,6 +1,6 @@
 package com.alexpyslar03.productselectorbackend.controller;
 
-import com.alexpyslar03.productselectorbackend.domain.dto.UserDTO;
+import com.alexpyslar03.productselectorbackend.domain.dto.UserUpdateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.User;
 import com.alexpyslar03.productselectorbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,24 +23,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-
-    /**
-     * Создает нового пользователя.
-     *
-     * @param user User с данными нового пользователя.
-     * @return Ответ с созданным пользователем и статусом 201 Created.
-     */
-    @Operation(summary = "Создание нового пользователя", description = "Создает нового пользователя и возвращает его.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Пользователь успешно создан"),
-            @ApiResponse(responseCode = "400", description = "Некорректные данные для создания пользователя")
-    })
-    @PostMapping
-    public ResponseEntity<User> create(
-            @Parameter(description = "DTO с данными нового пользователя", required = true) @RequestBody User user) {
-        User createdUser = userService.create(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-    }
 
     /**
      * Возвращает список всех пользователей.
@@ -90,7 +71,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Не найдены пользователи с указанными ID")
     })
     @GetMapping("/batch")
-    public ResponseEntity<List<User>> readByIdIn(
+    public ResponseEntity<List<User>> readAllByIdIn(
             @Parameter(description = "Список идентификаторов пользователей", required = true) @RequestParam List<Long> ids) {
         List<User> users = userService.readAllByIdIn(ids);
         return ResponseEntity.ok(users);
@@ -99,7 +80,7 @@ public class UserController {
     /**
      * Обновляет данные пользователя.
      *
-     * @param user Пользователь с обновленными данными.
+     * @param request Пользователь с обновленными данными.
      * @return Ответ с обновленным пользователем и статусом 200 OK.
      * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
@@ -110,9 +91,9 @@ public class UserController {
     })
     @PutMapping
     public ResponseEntity<User> update(
-            @Parameter(description = "Пользователь с обновленными данными", required = true) @RequestBody User user) {
-        User updatedUser = userService.update(user);
-        return ResponseEntity.ok(updatedUser);
+            @Parameter(description = "Пользователь с обновленными данными", required = true) @RequestBody UserUpdateRequest request) {
+        User user = userService.update(request);
+        return ResponseEntity.ok(user);
     }
 
     /**

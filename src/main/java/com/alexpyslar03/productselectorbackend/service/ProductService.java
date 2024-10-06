@@ -1,12 +1,13 @@
 package com.alexpyslar03.productselectorbackend.service;
 
-import com.alexpyslar03.productselectorbackend.domain.dto.ProductDTO;
+import com.alexpyslar03.productselectorbackend.domain.dto.ProductCreateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Product;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,14 +29,14 @@ public class ProductService {
     /**
      * Создает новый продукт на основе предоставленного DTO и сохраняет его в репозитории.
      *
-     * @param dto DTO с данными нового продукта.
+     * @param request DTO с данными нового продукта.
      * @return Созданный продукт.
      */
-    public Product create(ProductDTO dto) {
+    public Product create(ProductCreateRequest request) {
         Product product = Product.builder()
-                .name(dto.getName())
-                .image(dto.getImage())
-                .recipes(recipeRepository.findAllByIdIn(dto.getRecipeIds())) // Установка связанных рецептов
+                .name(request.getName())
+                .image(request.getImage())
+                .recipes(recipeRepository.findAllByIdIn(request.getRecipeIds())) // Установка связанных рецептов
                 .build();
         Product savedProduct = productRepository.save(product);
         logger.info("Продукт с ID {} успешно создан.", savedProduct.getId());
@@ -93,7 +94,7 @@ public class ProductService {
      * @return Список продуктов, связанных с указанным рецептом.
      * @throws RuntimeException Если продукты для указанного рецепта не найдены.
      */
-    public List<Product> readByRecipeId(Long id) {
+    public List<Product> readByRecipesId(Long id) {
         List<Product> products = productRepository.findByRecipesId(id);
         if (products.isEmpty()) {
             throw new RuntimeException(String.format("Продукты для рецепта с идентификатором %d не найдены.", id));
@@ -110,7 +111,7 @@ public class ProductService {
      * @return Список продуктов, связанных с указанными рецептами.
      * @throws RuntimeException Если продукты для указанных рецептов не найдены.
      */
-    public List<Product> readByRecipeIdIn(List<Long> ids) {
+    public List<Product> readByRecipesIdIn(List<Long> ids) {
         List<Product> products = productRepository.findByRecipesIdIn(ids);
         if (products.isEmpty()) {
             throw new RuntimeException(String.format("Продукты для рецептов с идентификаторами %s не найдены.", ids));

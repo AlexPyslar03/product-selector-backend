@@ -1,12 +1,15 @@
 package com.alexpyslar03.productselectorbackend.domain.dto;
 
-import com.alexpyslar03.productselectorbackend.domain.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * DTO (Data Transfer Object) для передачи данных о пользователе.
@@ -16,7 +19,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDTO {
+public class UserCreateRequest implements UserDetails {
 
     /**
      * Имя пользователя.
@@ -41,15 +44,8 @@ public class UserDTO {
      */
     private LocalDate birthDate;
 
-    /**
-     * Дата регистрации пользователя.
-     * Не может быть null.
-     */
-    private LocalDate registrationDate;
-
-    /**
-     * Уровень доступа пользователя.
-     * Использует перечисление AccessLevel из сущности User.
-     */
-    private Role role;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
 }

@@ -3,8 +3,8 @@ package com.alexpyslar03.productselectorbackend.service;
 import com.alexpyslar03.productselectorbackend.domain.dto.JwtAuthenticationResponse;
 import com.alexpyslar03.productselectorbackend.domain.dto.SignInRequest;
 import com.alexpyslar03.productselectorbackend.domain.dto.SignUpRequest;
+import com.alexpyslar03.productselectorbackend.domain.dto.UserCreateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Role;
-import com.alexpyslar03.productselectorbackend.domain.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,11 +27,11 @@ public class AuthenticationService {
      */
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
 
-        var user = User.builder()
+        var user = UserCreateRequest.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
+                .birthDate(request.getBirthDate())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.ROLE_USER)
                 .build();
 
         userService.create(user);

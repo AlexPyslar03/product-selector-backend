@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 @Schema(description = "Запрос на регистрацию")
 public class SignUpRequest {
@@ -20,6 +22,8 @@ public class SignUpRequest {
     @NotBlank(message = "Адрес электронной почты не может быть пустыми")
     @Email(message = "Email адрес должен быть в формате user@example.com")
     private String email;
+
+    private LocalDate birthDate;
 
     @Schema(description = "Пароль", example = "my_1secret1_password")
     @Size(max = 255, message = "Длина пароля должна быть не более 255 символов")

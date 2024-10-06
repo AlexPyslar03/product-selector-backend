@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.alexpyslar03'  // Группа пакетов для проекта
-version = '0.1.0'  // Версия проекта
+version = '0.2.0'  // Версия проекта
 
 java {
     toolchain {
@@ -24,6 +24,9 @@ dependencies {
 
     // Spring Security
     implementation "org.springframework.boot:spring-boot-starter-security"
+
+    // Spring Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // Драйвер PostgreSQL для подключения к базе данных
     runtimeOnly 'org.postgresql:postgresql'

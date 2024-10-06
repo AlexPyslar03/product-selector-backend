@@ -1,5 +1,8 @@
 package com.alexpyslar03.productselectorbackend.service;
 
+import com.alexpyslar03.productselectorbackend.domain.dto.UserCreateRequest;
+import com.alexpyslar03.productselectorbackend.domain.dto.UserUpdateRequest;
+import com.alexpyslar03.productselectorbackend.domain.entity.Role;
 import com.alexpyslar03.productselectorbackend.domain.entity.User;
 import com.alexpyslar03.productselectorbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -26,21 +31,21 @@ public class UserService {
     /**
      * Создает нового пользователя на основе предоставленного DTO и сохраняет его в репозитории.
      *
-     * @param dto DTO с данными нового пользователя.
+     * @param request DTO с данными нового пользователя.
      * @return Сообщение о создании пользователя и сам созданный пользователь.
      */
-    public User create(User dto) {
+    public User create(UserCreateRequest request) {
         User user = User.builder()
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .password(dto.getPassword())
-                .birthDate(dto.getBirthDate())
-                .registrationDate(dto.getRegistrationDate())
-                .role(dto.getRole())
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .birthDate(request.getBirthDate())
+                .registrationDate(LocalDate.from(LocalDateTime.now()))
+                .role(Role.ROLE_USER)
                 .build();
-        User savedUser = userRepository.save(user);
-        logger.info("Пользователь с ID {} успешно создан.", savedUser.getId());
-        return savedUser;
+        User saveUser = userRepository.save(user);
+        logger.info("Пользователь с ID {} успешно создан.", saveUser.getId());
+        return saveUser;
     }
 
     /**
@@ -122,17 +127,25 @@ public class UserService {
      * Обновляет существующего пользователя.
      * Если пользователь с указанным идентификатором не найден, выбрасывается исключение UserNotFoundException.
      *
-     * @param user Пользователь с обновленными данными.
+     * @param request Пользователь с обновленными данными.
      * @return Обновленный пользователь.
      * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
      */
-    public User update(User user) {
-        if (!userRepository.existsById(user.getId())) {
-            throw new RuntimeException(String.format("Невозможно обновить. Пользователь с идентификатором %d не найден.", user.getId()));
+    public User update(UserUpdateRequest request) {
+        if (!userRepository.existsById(request.getId())) {
+            throw new RuntimeException(String.format("Невозможно обновить. Пользователь с идентификатором %d не найден.", request.getId()));
         }
-        User updatedUser = userRepository.save(user);
-        logger.info("Пользователь с ID {} успешно обновлен.", user.getId());
-        return updatedUser;
+        User user = User.builder()
+                .id(request.getId())
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .birthDate(request.getBirthDate())
+                .role(request.getRole())
+                .build();
+        User saveUser = userRepository.save(user);
+        logger.info("Пользователь с ID {} успешно обновлен.", saveUser.getId());
+        return saveUser;
     }
 
     /**

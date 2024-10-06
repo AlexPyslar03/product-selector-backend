@@ -1,6 +1,6 @@
 package com.alexpyslar03.productselectorbackend.controller;
 
-import com.alexpyslar03.productselectorbackend.domain.dto.ProductDTO;
+import com.alexpyslar03.productselectorbackend.domain.dto.ProductCreateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Product;
 import com.alexpyslar03.productselectorbackend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +39,7 @@ public class ProductController {
     })
     @PostMapping
     public ResponseEntity<Product> create(
-            @Parameter(description = "DTO с данными нового продукта", required = true) @RequestBody ProductDTO dto) {
+            @Parameter(description = "DTO с данными нового продукта", required = true) @RequestBody ProductCreateRequest dto) {
         Product createdProduct = productService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
@@ -91,7 +91,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Не найдены продукты с указанными ID")
     })
     @GetMapping("/batch")
-    public ResponseEntity<Set<Product>> readByIds(
+    public ResponseEntity<Set<Product>> readAllByIdIn(
             @Parameter(description = "Список идентификаторов продуктов", required = true) @RequestParam List<Long> ids) {
         Set<Product> products = productService.readAllByIdIn(ids);
         return ResponseEntity.ok(products);
@@ -110,9 +110,9 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Продукты для указанного рецепта не найдены")
     })
     @GetMapping("/recipe/{id}")
-    public ResponseEntity<List<Product>> readByRecipeId(
+    public ResponseEntity<List<Product>> readByRecipesId(
             @Parameter(description = "Идентификатор рецепта", required = true) @PathVariable Long id) {
-        List<Product> products = productService.readByRecipeId(id);
+        List<Product> products = productService.readByRecipesId(id);
         return ResponseEntity.ok(products);
     }
 
@@ -129,9 +129,9 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Продукты для указанных рецептов не найдены")
     })
     @GetMapping("/recipe/batch")
-    public ResponseEntity<List<Product>> readByRecipeIdIn(
+    public ResponseEntity<List<Product>> readByRecipesIdIn(
             @Parameter(description = "Список идентификаторов рецептов", required = true) @RequestParam List<Long> ids) {
-        List<Product> products = productService.readByRecipeIdIn(ids);
+        List<Product> products = productService.readByRecipesIdIn(ids);
         return ResponseEntity.ok(products);
     }
 

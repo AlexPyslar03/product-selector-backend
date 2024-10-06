@@ -1,9 +1,0 @@
-PUT http://localhost:8081/product
-Content-Type: application/json
-
-{
-    "id": 1,
-    "name": "Chocolate Cake Updated",
-    "image": "http://example.com/chocolate-cake-updated.png",
-    "recipeIds": [1, 3]
-}

@@ -8,7 +8,7 @@ import java.util.List;
  * Используется для обмена данными между слоями приложения и внешними системами.
  */
 @Data
-public class ProductDTO {
+public class ProductCreateRequest {
 
     /**
      * Название продукта.

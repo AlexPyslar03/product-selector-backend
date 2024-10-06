@@ -1,6 +1,6 @@
 package com.alexpyslar03.productselectorbackend.controller;
 
-import com.alexpyslar03.productselectorbackend.domain.dto.RecipeDTO;
+import com.alexpyslar03.productselectorbackend.domain.dto.RecipeCreateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Recipe;
 import com.alexpyslar03.productselectorbackend.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +39,7 @@ public class RecipeController {
     })
     @PostMapping
     public ResponseEntity<Recipe> create(
-            @Parameter(description = "DTO с данными нового рецепта", required = true) @RequestBody RecipeDTO dto) {
+            @Parameter(description = "DTO с данными нового рецепта", required = true) @RequestBody RecipeCreateRequest dto) {
         Recipe createdRecipe = recipeService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
@@ -110,9 +110,9 @@ public class RecipeController {
             @ApiResponse(responseCode = "404", description = "Рецепты для указанного продукта не найдены")
     })
     @GetMapping("/product/{id}")
-    public ResponseEntity<List<Recipe>> readByProductId(
+    public ResponseEntity<List<Recipe>> readByProductsId(
             @Parameter(description = "Идентификатор продукта", required = true) @PathVariable Long id) {
-        List<Recipe> recipes = recipeService.readByProductId(id);
+        List<Recipe> recipes = recipeService.readByProductsId(id);
         return ResponseEntity.ok(recipes);
     }
 
@@ -129,9 +129,9 @@ public class RecipeController {
             @ApiResponse(responseCode = "404", description = "Рецепты для указанных продуктов не найдены")
     })
     @GetMapping("/product/batch")
-    public ResponseEntity<List<Recipe>> readByProductIdIn(
+    public ResponseEntity<List<Recipe>> readByProductsIdIn(
             @Parameter(description = "Список идентификаторов продуктов", required = true) @RequestParam List<Long> ids) {
-        List<Recipe> recipes = recipeService.readByProductIdIn(ids);
+        List<Recipe> recipes = recipeService.readByProductsIdIn(ids);
         return ResponseEntity.ok(recipes);
     }
 
