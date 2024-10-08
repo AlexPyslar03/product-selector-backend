@@ -8,10 +8,12 @@ import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Сервисный класс для работы с рецептами.
@@ -22,7 +24,6 @@ import java.util.Set;
 public class RecipeService {
 
     private static final Logger logger = LoggerFactory.getLogger(RecipeService.class);
-
     private final RecipeRepository recipeRepository;
     private final ProductRepository productRepository;
 
@@ -30,139 +31,128 @@ public class RecipeService {
      * Создает новый рецепт на основе предоставленного DTO и сохраняет его в репозитории.
      *
      * @param request DTO с данными нового рецепта.
-     * @return Созданный рецепт.
+     * @return CompletableFuture с созданным рецептом.
      */
-    public Recipe create(RecipeCreateRequest request) {
-        Recipe recipe = Recipe.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .vegan(request.isVegan())
-                .difficultyLevel(request.getDifficultyLevel())
-                .rating(request.getRating())
-                .imageUrl(request.getImageUrl())
-                .products(productRepository.findAllByIdIn(request.getProductIds())) // Установка связанных продуктов
-                .build();
-        Recipe saveRecipe = recipeRepository.save(recipe);
-        logger.info("Рецепт с ID {} успешно создан.", saveRecipe.getId());
-        return saveRecipe;
+    @Async
+    public CompletableFuture<Recipe> create(RecipeCreateRequest request) {
+        return productRepository.findAllByIdIn(request.getProductIds())
+                .thenCompose(products -> {
+                    Recipe recipe = Recipe.builder()
+                            .name(request.getName())
+                            .description(request.getDescription())
+                            .vegan(request.isVegan())
+                            .difficultyLevel(request.getDifficultyLevel())
+                            .rating(request.getRating())
+                            .imageUrl(request.getImageUrl())
+                            .products(products) // Передаем уже загруженные продукты
+                            .build();
+                    return CompletableFuture.completedFuture(recipeRepository.save(recipe));
+                })
+                .thenApply(recipe -> {
+                    logger.info("Рецепт с ID {} успешно создан.", recipe.getId());
+                    return recipe;
+                });
     }
 
     /**
      * Возвращает список всех рецептов.
      *
-     * @return Список всех рецептов.
+     * @return CompletableFuture с списком всех рецептов.
      */
-    public List<Recipe> readAll() {
-        List<Recipe> recipes = recipeRepository.findAll();
-        logger.info("Запрошен список всех рецептов.");
-        return recipes;
+    @Async
+    public CompletableFuture<List<Recipe>> readAll() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Recipe> recipes = recipeRepository.findAll();
+            logger.info("Запрошен список всех рецептов.");
+            return recipes;
+        });
     }
 
     /**
      * Возвращает рецепт по его идентификатору.
-     * Если рецепт не найден, выбрасывается исключение RecipeNotFoundException.
      *
      * @param id Идентификатор рецепта.
-     * @return Рецепт с указанным идентификатором.
-     * @throws RuntimeException Если рецепт с указанным идентификатором не найден.
+     * @return CompletableFuture с рецептом.
      */
-    public Recipe readById(Long id) {
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(String.format("Рецепт с идентификатором %d не найден.", id)));
-        logger.info("Рецепт с ID {} найден.", id);
-        return recipe;
+    @Async
+    public CompletableFuture<Recipe> readById(Long id) {
+        return CompletableFuture.supplyAsync(() ->
+                recipeRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException(String.format("Рецепт с идентификатором %d не найден.", id)))
+        ).thenApply(recipe -> {
+            logger.info("Рецепт с ID {} найден.", id);
+            return recipe;
+        });
     }
 
     /**
      * Возвращает набор рецептов по предоставленным идентификаторам.
-     * Если рецепты не найдены, выбрасывается исключение RecipeNotFoundException.
      *
      * @param ids Список идентификаторов рецептов.
-     * @return Набор рецептов с указанными идентификаторами.
-     * @throws RuntimeException Если рецепты с указанными идентификаторами не найдены.
+     * @return CompletableFuture с набором рецептов.
      */
-    public Set<Recipe> readAllByIdIn(List<Long> ids) {
-        Set<Recipe> recipes = recipeRepository.findAllByIdIn(ids);
-        if (recipes.isEmpty()) {
-            throw new RuntimeException("Рецепты с указанными идентификаторами не найдены.");
-        }
-        logger.info("Найдено {} рецептов по указанным ID.", recipes.size());
-        return recipes;
-    }
-
-    /**
-     * Возвращает список рецептов по идентификатору продукта.
-     * Если рецепты не найдены, выбрасывается исключение RecipeNotFoundException.
-     *
-     * @param id Идентификатор продукта.
-     * @return Список рецептов, содержащих указанный продукт.
-     * @throws RuntimeException Если рецепты для указанного продукта не найдены.
-     */
-    public List<Recipe> readByProductsId(Long id) {
-        List<Recipe> recipes = recipeRepository.findByProductsId(id);
-        if (recipes.isEmpty()) {
-            throw new RuntimeException(String.format("Рецепты для продукта с идентификатором %d не найдены.", id));
-        }
-        logger.info("Найдено {} рецептов для продукта с ID {}.", recipes.size(), id);
-        return recipes;
-    }
-
-    /**
-     * Возвращает список рецептов по списку идентификаторов продуктов.
-     * Если рецепты не найдены, выбрасывается исключение RecipeNotFoundException.
-     *
-     * @param ids Список идентификаторов продуктов.
-     * @return Список рецептов, содержащих указанные продукты.
-     * @throws RuntimeException Если рецепты для указанных продуктов не найдены.
-     */
-    public List<Recipe> readByProductsIdIn(List<Long> ids) {
-        List<Recipe> recipes = recipeRepository.findByProductsIdIn(ids);
-        if (recipes.isEmpty()) {
-            throw new RuntimeException(String.format("Рецепты для продуктов с идентификаторами %s не найдены.", ids));
-        }
-        logger.info("Найдено {} рецептов для продуктов с ID {}.", recipes.size(), ids);
-        return recipes;
+    @Async
+    public CompletableFuture<Set<Recipe>> readAllByIdIn(List<Long> ids) {
+        return recipeRepository.findAllByIdIn(ids)
+                .thenApply(recipes -> {
+                    if (recipes.isEmpty()) {
+                        throw new RuntimeException("Не найдено рецептов с указанными идентификаторами.");
+                    }
+                    logger.info("Найдено {} рецептов по указанным ID.", recipes.size());
+                    return recipes;
+                });
     }
 
     /**
      * Обновляет существующий рецепт.
-     * Если рецепт с указанным идентификатором не найден, выбрасывается исключение RecipeNotFoundException.
      *
      * @param request Рецепт с обновленными данными.
-     * @return Обновленный рецепт.
-     * @throws RuntimeException Если рецепт с указанным идентификатором не найден.
+     * @return CompletableFuture с обновленным рецептом.
      */
-    public Recipe update(RecipeUpdateRequest request) {
+    @Async
+    public CompletableFuture<Recipe> update(RecipeUpdateRequest request) {
         if (!recipeRepository.existsById(request.getId())) {
             throw new RuntimeException(String.format("Невозможно обновить. Рецепт с идентификатором %d не найден.", request.getId()));
         }
-        Recipe recipe = Recipe.builder()
-                .id(request.getId())
-                .name(request.getName())
-                .description(request.getDescription())
-                .vegan(request.isVegan())
-                .difficultyLevel(request.getDifficultyLevel())
-                .rating(request.getRating())
-                .imageUrl(request.getImageUrl())
-                .products(productRepository.findAllByIdIn(request.getProductIds())) // Установка связанных продуктов
-                .build();
-        Recipe saveRecipe = recipeRepository.save(recipe);
-        logger.info("Рецепт с ID {} успешно обновлен.", saveRecipe.getId());
-        return saveRecipe;
+        // Получаем список продуктов асинхронно
+        return productRepository.findAllByIdIn(request.getProductIds())
+                .thenCompose(products -> {
+                    // Создание обновлённого рецепта
+                    Recipe recipe = Recipe.builder()
+                            .id(request.getId())
+                            .name(request.getName())
+                            .description(request.getDescription())
+                            .vegan(request.isVegan())
+                            .difficultyLevel(request.getDifficultyLevel())
+                            .rating(request.getRating())
+                            .imageUrl(request.getImageUrl())
+                            .products(products) // Теперь products имеет тип Set<Product>
+                            .build();
+
+                    // Сохраняем рецепт асинхронно
+                    return CompletableFuture.completedFuture(recipeRepository.save(recipe));
+                })
+                .thenApply(recipe -> {
+                    logger.info("Рецепт с ID {} успешно обновлен.", recipe.getId());
+                    return recipe;
+                });
     }
+
 
     /**
      * Удаляет рецепт по его идентификатору.
-     * Если рецепт с указанным идентификатором не найден, выбрасывается исключение RecipeNotFoundException.
      *
      * @param id Идентификатор рецепта для удаления.
-     * @throws RuntimeException Если рецепт с указанным идентификатором не найден.
      */
-    public void delete(Long id) {
+    @Async
+    public CompletableFuture<Void> delete(Long id) {
         if (!recipeRepository.existsById(id)) {
             throw new RuntimeException(String.format("Невозможно удалить. Рецепт с идентификатором %d не найден.", id));
         }
-        recipeRepository.deleteById(id);
-        logger.info("Рецепт с ID {} успешно удален.", id);
+        return CompletableFuture.runAsync(() -> {
+            recipeRepository.deleteById(id); // Удаление рецепта
+            logger.info("Рецепт с ID {} успешно удален.", id);
+        });
     }
+
 }

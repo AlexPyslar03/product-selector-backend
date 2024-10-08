@@ -3,6 +3,7 @@ package com.alexpyslar03.productselectorbackend.service;
 import com.alexpyslar03.productselectorbackend.domain.dto.ProductCreateRequest;
 import com.alexpyslar03.productselectorbackend.domain.dto.ProductUpdateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Product;
+import com.alexpyslar03.productselectorbackend.domain.entity.Recipe;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Сервисный класс для работы с продуктами.
@@ -23,7 +25,6 @@ import java.util.Set;
 public class ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
-
     private final ProductRepository productRepository;
     private final RecipeRepository recipeRepository;
 
@@ -31,131 +32,153 @@ public class ProductService {
      * Создает новый продукт на основе предоставленного DTO и сохраняет его в репозитории.
      *
      * @param request DTO с данными нового продукта.
-     * @return Созданный продукт.
+     * @return CompletableFuture с созданным продуктом.
      */
-    public Product create(ProductCreateRequest request) {
-        Product product = Product.builder()
-                .name(request.getName())
-                .imageUrl(request.getImageUrl())
-                .recipes(recipeRepository.findAllByIdIn(request.getRecipeIds())) // Установка связанных рецептов
-                .build();
-        Product saveProduct = productRepository.save(product);
-        logger.info("Продукт с ID {} успешно создан.", saveProduct.getId());
-        return saveProduct;
+    @Async
+    public CompletableFuture<Product> create(ProductCreateRequest request) {
+        return recipeRepository.findAllByIdIn(request.getRecipeIds())
+                .thenCompose(recipes -> {
+                    Product product = Product.builder()
+                            .name(request.getName())
+                            .imageUrl(request.getImageUrl())
+                            .recipes(recipes) // Передаем уже загруженные рецепты
+                            .build();
+                    return CompletableFuture.completedFuture(productRepository.save(product));
+                })
+                .thenApply(product -> {
+                    logger.info("Продукт с ID {} успешно создан.", product.getId());
+                    return product;
+                });
     }
 
     /**
      * Возвращает список всех продуктов.
      *
-     * @return Список всех продуктов.
+     * @return CompletableFuture с списком всех продуктов.
      */
-    public List<Product> readAll() {
-        List<Product> products = productRepository.findAll();
-        logger.info("Запрошен список всех продуктов.");
-        return products;
+    @Async
+    public CompletableFuture<List<Product>> readAll() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Product> products = productRepository.findAll();
+            logger.info("Запрошен список всех продуктов.");
+            return products;
+        });
     }
 
     /**
      * Возвращает продукт по его идентификатору.
-     * Если продукт не найден, выбрасывается исключение ProductNotFoundException.
      *
      * @param id Идентификатор продукта.
-     * @return Продукт с указанным идентификатором.
-     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
+     * @return CompletableFuture с продуктом.
      */
-    public Product readById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(String.format("Продукт с идентификатором %d не найден.", id)));
-        logger.info("Продукт с ID {} найден.", id);
-        return product;
+    @Async
+    public CompletableFuture<Product> readById(Long id) {
+        return CompletableFuture.supplyAsync(() ->
+                productRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException(String.format("Продукт с идентификатором %d не найден.", id)))
+        ).thenApply(product -> {
+            logger.info("Продукт с ID {} найден.", id);
+            return product;
+        });
     }
 
     /**
      * Возвращает набор продуктов по предоставленным идентификаторам.
-     * Если продукты не найдены, выбрасывается исключение ProductNotFoundException.
      *
      * @param ids Список идентификаторов продуктов.
-     * @return Набор продуктов с указанными идентификаторами.
-     * @throws RuntimeException Если продукты с указанными идентификаторами не найдены.
+     * @return CompletableFuture с набором продуктов.
      */
-    public Set<Product> readAllByIdIn(List<Long> ids) {
-        Set<Product> products = productRepository.findAllByIdIn(ids);
-        if (products.isEmpty()) {
-            throw new RuntimeException("Не найдено продуктов с указанными идентификаторами.");
-        }
-        logger.info("Найдено {} продуктов по указанным ID.", products.size());
-        return products;
+    @Async
+    public CompletableFuture<Set<Product>> readAllByIdIn(List<Long> ids) {
+        return productRepository.findAllByIdIn(ids)
+                .thenApply(products -> {
+                    if (products.isEmpty()) {
+                        throw new RuntimeException("Не найдено продуктов с указанными идентификаторами.");
+                    }
+                    logger.info("Найдено {} продуктов по указанным ID.", products.size());
+                    return products;
+                });
     }
 
     /**
      * Возвращает список продуктов по идентификатору рецепта.
-     * Если продукты не найдены, выбрасывается исключение ProductNotFoundException.
      *
      * @param id Идентификатор рецепта.
-     * @return Список продуктов, связанных с указанным рецептом.
-     * @throws RuntimeException Если продукты для указанного рецепта не найдены.
+     * @return CompletableFuture с списком продуктов.
      */
-    public List<Product> readByRecipesId(Long id) {
-        List<Product> products = productRepository.findByRecipesId(id);
-        if (products.isEmpty()) {
-            throw new RuntimeException(String.format("Продукты для рецепта с идентификатором %d не найдены.", id));
-        }
-        logger.info("Найдено {} продуктов для рецепта с ID {}.", products.size(), id);
-        return products;
+    @Async
+    public CompletableFuture<List<Product>> readByRecipesId(Long id) {
+        return productRepository.findByRecipesId(id)
+                .thenApply(products -> {
+                    if (products.isEmpty()) {
+                        throw new RuntimeException(String.format("Продукты для рецепта с идентификатором %d не найдены.", id));
+                    }
+                    logger.info("Найдено {} продуктов для рецепта с ID {}.", products.size(), id);
+                    return products;
+                });
     }
 
     /**
      * Возвращает список продуктов по списку идентификаторов рецептов.
-     * Если продукты не найдены, выбрасывается исключение ProductNotFoundException.
      *
      * @param ids Список идентификаторов рецептов.
-     * @return Список продуктов, связанных с указанными рецептами.
-     * @throws RuntimeException Если продукты для указанных рецептов не найдены.
+     * @return CompletableFuture с списком продуктов.
      */
-    public List<Product> readByRecipesIdIn(List<Long> ids) {
-        List<Product> products = productRepository.findByRecipesIdIn(ids);
-        if (products.isEmpty()) {
-            throw new RuntimeException(String.format("Продукты для рецептов с идентификаторами %s не найдены.", ids));
-        }
-        logger.info("Найдено {} продуктов для рецептов с ID {}.", products.size(), ids);
-        return products;
+    @Async
+    public CompletableFuture<List<Product>> readByRecipesIdIn(List<Long> ids) {
+        return productRepository.findByRecipesIdIn(ids)
+                .thenApply(products -> {
+                    if (products.isEmpty()) {
+                        throw new RuntimeException(String.format("Продукты для рецептов с идентификаторами %s не найдены.", ids));
+                    }
+                    logger.info("Найдено {} продуктов для рецептов с ID {}.", products.size(), ids);
+                    return products;
+                });
     }
 
     /**
      * Обновляет существующий продукт.
-     * Если продукт с указанным идентификатором не найден, выбрасывается исключение ProductNotFoundException.
      *
      * @param request Продукт с обновленными данными.
-     * @return Обновленный продукт.
-     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
+     * @return CompletableFuture с обновленным продуктом.
      */
-    public Product update(ProductUpdateRequest request) {
+    @Async
+    public CompletableFuture<Product> update(ProductUpdateRequest request) {
         if (!productRepository.existsById(request.getId())) {
             throw new RuntimeException(String.format("Невозможно обновить. Продукт с идентификатором %d не найден.", request.getId()));
         }
-        Product product = Product.builder()
-                .id(request.getId())
-                .name(request.getName())
-                .imageUrl(request.getImageUrl())
-                .recipes(recipeRepository.findAllByIdIn(request.getRecipeIds())) // Установка связанных рецептов
-                .build();
-        Product saveProduct = productRepository.save(product);
-        logger.info("Продукт с ID {} успешно обновлен.", saveProduct.getId());
-        return saveProduct;
+        return recipeRepository.findAllByIdIn(request.getRecipeIds())
+                .thenCompose(recipes -> {
+                    Product product = Product.builder()
+                            .id(request.getId())
+                            .name(request.getName())
+                            .imageUrl(request.getImageUrl())
+                            .recipes(recipes)
+                            .build();
+                    return CompletableFuture.completedFuture(productRepository.save(product));
+                })
+                .thenApply(product -> {
+                    logger.info("Продукт с ID {} успешно обновлен.", product.getId());
+                    return product;
+                });
     }
+
 
     /**
      * Удаляет продукт по его идентификатору.
-     * Если продукт с указанным идентификатором не найден, выбрасывается исключение ProductNotFoundException.
      *
      * @param id Идентификатор продукта для удаления.
-     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
+     * @return CompletableFuture<Void> с пустым значением.
      */
-    public void delete(Long id) {
+    @Async
+    public CompletableFuture<Void> delete(Long id) {
         if (!productRepository.existsById(id)) {
             throw new RuntimeException(String.format("Невозможно удалить. Продукт с идентификатором %d не найден.", id));
         }
-        productRepository.deleteById(id);
-        logger.info("Продукт с ID {} успешно удален.", id);
+        return CompletableFuture.runAsync(() -> {
+            productRepository.deleteById(id); // Удаление продукта
+            logger.info("Продукт с ID {} успешно удален.", id);
+        });
     }
+
 }

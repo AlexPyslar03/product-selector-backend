@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Контроллер для работы с рецептами.
@@ -41,10 +41,11 @@ public class RecipeController {
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
-    public ResponseEntity<Recipe> create(
+    public CompletableFuture<ResponseEntity<Recipe>> create(
             @Parameter(description = "DTO с данными нового рецепта", required = true) @RequestBody RecipeCreateRequest dto) {
-        Recipe createdRecipe = recipeService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
+        return recipeService.create(dto)
+                .thenApply(recipe -> ResponseEntity.status(HttpStatus.CREATED).body(recipe))
+                .exceptionally(ex -> ResponseEntity.badRequest().build());
     }
 
     /**
@@ -57,9 +58,9 @@ public class RecipeController {
             @ApiResponse(responseCode = "200", description = "Список рецептов успешно возвращен")
     })
     @GetMapping
-    public ResponseEntity<List<Recipe>> readAll() {
-        List<Recipe> recipes = recipeService.readAll();
-        return ResponseEntity.ok(recipes);
+    public CompletableFuture<ResponseEntity<List<Recipe>>> readAll() {
+        return recipeService.readAll()
+                .thenApply(ResponseEntity::ok);
     }
 
     /**
@@ -75,67 +76,11 @@ public class RecipeController {
             @ApiResponse(responseCode = "404", description = "Рецепт с указанным ID не найден")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Recipe> readById(
+    public CompletableFuture<ResponseEntity<Recipe>> readById(
             @Parameter(description = "Идентификатор рецепта", required = true) @PathVariable Long id) {
-        Recipe recipe = recipeService.readById(id);
-        return ResponseEntity.ok(recipe);
-    }
-
-    /**
-     * Возвращает набор рецептов по предоставленным идентификаторам.
-     *
-     * @param ids Список идентификаторов рецептов.
-     * @return Ответ с набором рецептов и статусом 200 OK.
-     * @throws RuntimeException Если ни один из рецептов с указанными идентификаторами не найден.
-     */
-    @Operation(summary = "Получение рецептов по ID", description = "Возвращает набор рецептов по указанным ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Набор рецептов успешно возвращен"),
-            @ApiResponse(responseCode = "404", description = "Не найдены рецепты с указанными ID")
-    })
-    @GetMapping("/batch")
-    public ResponseEntity<Set<Recipe>> readByIds(
-            @Parameter(description = "Список идентификаторов рецептов", required = true) @RequestParam List<Long> ids) {
-        Set<Recipe> recipes = recipeService.readAllByIdIn(ids);
-        return ResponseEntity.ok(recipes);
-    }
-
-    /**
-     * Возвращает список рецептов по идентификатору продукта.
-     *
-     * @param id Идентификатор продукта.
-     * @return Ответ со списком рецептов и статусом 200 OK.
-     * @throws RuntimeException Если рецепты для указанного продукта не найдены.
-     */
-    @Operation(summary = "Получение рецептов по ID продукта", description = "Возвращает список рецептов по указанному ID продукта.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Список рецептов успешно возвращен"),
-            @ApiResponse(responseCode = "404", description = "Рецепты для указанного продукта не найдены")
-    })
-    @GetMapping("/product/{id}")
-    public ResponseEntity<List<Recipe>> readByProductsId(
-            @Parameter(description = "Идентификатор продукта", required = true) @PathVariable Long id) {
-        List<Recipe> recipes = recipeService.readByProductsId(id);
-        return ResponseEntity.ok(recipes);
-    }
-
-    /**
-     * Возвращает список рецептов по списку идентификаторов продуктов.
-     *
-     * @param ids Список идентификаторов продуктов.
-     * @return Ответ со списком рецептов и статусом 200 OK.
-     * @throws RuntimeException Если рецепты для указанных продуктов не найдены.
-     */
-    @Operation(summary = "Получение рецептов по списку ID продуктов", description = "Возвращает список рецептов по списку идентификаторов продуктов.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Список рецептов успешно возвращен"),
-            @ApiResponse(responseCode = "404", description = "Рецепты для указанных продуктов не найдены")
-    })
-    @GetMapping("/product/batch")
-    public ResponseEntity<List<Recipe>> readByProductsIdIn(
-            @Parameter(description = "Список идентификаторов продуктов", required = true) @RequestParam List<Long> ids) {
-        List<Recipe> recipes = recipeService.readByProductsIdIn(ids);
-        return ResponseEntity.ok(recipes);
+        return recipeService.readById(id)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 
     /**
@@ -152,10 +97,11 @@ public class RecipeController {
     })
     @PutMapping
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
-    public ResponseEntity<Recipe> update(
+    public CompletableFuture<ResponseEntity<Recipe>> update(
             @Parameter(description = "Рецепт с обновленными данными", required = true) @RequestBody RecipeUpdateRequest recipe) {
-        Recipe updatedRecipe = recipeService.update(recipe);
-        return ResponseEntity.ok(updatedRecipe);
+        return recipeService.update(recipe)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 
     /**
@@ -172,9 +118,10 @@ public class RecipeController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> delete(
+    public CompletableFuture<ResponseEntity<Object>> delete(
             @Parameter(description = "Идентификатор рецепта для удаления", required = true) @PathVariable Long id) {
-        recipeService.delete(id);
-        return ResponseEntity.noContent().build();
+        return recipeService.delete(id)
+                .thenApply(v -> ResponseEntity.noContent().build())
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 }

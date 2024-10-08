@@ -12,16 +12,17 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@DataJpaTest
-@SpringJUnitConfig
+@DataJpaTest // Аннотация для тестирования слоя доступа к данным с использованием JPA
+@SpringJUnitConfig // Аннотация для интеграции с Spring TestContext Framework
 public class UserRepositoryTest {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository userRepository; // Внедрение зависимости UserRepository
 
     private User user1;
     private User user2;
@@ -29,6 +30,7 @@ public class UserRepositoryTest {
 
     @BeforeEach
     public void setUp() {
+        // Создание и сохранение пользователей перед каждым тестом
         user1 = userRepository.save(User.builder()
                 .username("John")
                 .email("john.doe@example.com")
@@ -57,11 +59,40 @@ public class UserRepositoryTest {
                 .build());
     }
 
+    /**
+     * Тестирование метода findAllByIdIn для проверки извлечения пользователей по их идентификаторам.
+     */
     @Test
     public void testFindAllByIdIn() {
-        List<User> users = userRepository.findAllByIdIn(Arrays.asList(user1.getId(), user2.getId(), user3.getId()));
-        assertNotNull(users);
-        assertEquals(3, users.size());
-        assertEquals(new HashSet<>(Arrays.asList(user1, user2, user3)), new HashSet<>(users));
+        CompletableFuture<List<User>> usersFuture = userRepository.findAllByIdIn(Arrays.asList(user1.getId(), user2.getId(), user3.getId()));
+
+        // Ожидание завершения выполнения асинхронного метода
+        List<User> users = usersFuture.join();
+
+        assertNotNull(users); // Проверка, что список пользователей не равен null
+        assertEquals(3, users.size()); // Проверка, что в списке 3 пользователя
+        assertEquals(new HashSet<>(Arrays.asList(user1, user2, user3)), new HashSet<>(users)); // Проверка, что пользователи совпадают
+    }
+
+    /**
+     * Тестирование метода findByUsername для проверки поиска пользователя по имени пользователя.
+     */
+    @Test
+    public void testFindByUsername() {
+        User foundUser = userRepository.findByUsername(user1.getUsername())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        assertNotNull(foundUser); // Проверка, что найденный пользователь не равен null
+        assertEquals(user1.getUsername(), foundUser.getUsername()); // Проверка, что имена пользователей совпадают
+    }
+
+    /**
+     * Тестирование метода existsByUsername для проверки существования пользователя по имени пользователя.
+     */
+    @Test
+    public void testExistsByUsername() {
+        boolean exists = userRepository.existsByUsername(user1.getUsername());
+
+        assertEquals(true, exists); // Проверка, что пользователь с данным именем существует
     }
 }

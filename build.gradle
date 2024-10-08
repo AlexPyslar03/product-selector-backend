@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.alexpyslar03'  // Группа пакетов для проекта
-version = '0.2.2'  // Версия проекта
+version = '0.3.0'  // Версия проекта
 
 java {
     toolchain {

@@ -8,6 +8,7 @@ import com.alexpyslar03.productselectorbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Сервисный класс для работы с пользователями.
@@ -25,70 +27,79 @@ import java.util.List;
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-
     private final UserRepository userRepository;
 
     /**
      * Создает нового пользователя на основе предоставленного DTO и сохраняет его в репозитории.
      *
      * @param request DTO с данными нового пользователя.
-     * @return Сообщение о создании пользователя и сам созданный пользователь.
+     * @return CompletableFuture с созданным пользователем.
      */
-    public User create(UserCreateRequest request) {
-        User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .birthDate(request.getBirthDate())
-                .registrationDate(LocalDate.from(LocalDateTime.now()))
-                .role(Role.ROLE_USER)
-                .build();
-        User saveUser = userRepository.save(user);
-        logger.info("Пользователь с ID {} успешно создан.", saveUser.getId());
-        return saveUser;
+    @Async
+    public CompletableFuture<User> create(UserCreateRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            User user = User.builder()
+                    .username(request.getUsername())
+                    .email(request.getEmail())
+                    .password(request.getPassword())
+                    .birthDate(request.getBirthDate())
+                    .registrationDate(LocalDate.from(LocalDateTime.now()))
+                    .role(Role.ROLE_USER)
+                    .build();
+            User savedUser = userRepository.save(user);
+            logger.info("Пользователь с ID {} успешно создан.", savedUser.getId());
+            return savedUser;
+        });
     }
 
     /**
      * Возвращает список всех пользователей.
      *
-     * @return Список пользователей.
+     * @return CompletableFuture со списком пользователей.
      */
-    public List<User> readAll() {
-        List<User> users = userRepository.findAll();
-        logger.info("Запрошен список всех пользователей.");
-        return users;
+    @Async
+    public CompletableFuture<List<User>> readAll() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<User> users = userRepository.findAll();
+            logger.info("Запрошен список всех пользователей.");
+            return users;
+        });
     }
 
     /**
      * Возвращает пользователя по его идентификатору.
-     * Если пользователь не найден, выбрасывается исключение UserNotFoundException.
+     * Если пользователь не найден, выбрасывается исключение RuntimeException.
      *
      * @param id Идентификатор пользователя.
-     * @return Пользователь с указанным идентификатором.
-     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
+     * @return CompletableFuture с пользователем.
      */
-    public User readById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(String.format("Пользователь с идентификатором %d не найден.", id)));
-        logger.info("Пользователь с ID {} найден.", id);
-        return user;
+    @Async
+    public CompletableFuture<User> readById(Long id) {
+        return CompletableFuture.supplyAsync(() -> {
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException(String.format("Пользователь с идентификатором %d не найден.", id)));
+            logger.info("Пользователь с ID {} найден.", id);
+            return user;
+        });
     }
 
     /**
      * Возвращает список пользователей по предоставленным идентификаторам.
-     * Если пользователи не найдены, выбрасывается исключение UserNotFoundException.
+     * Если пользователи не найдены, выбрасывается исключение RuntimeException.
      *
      * @param ids Список идентификаторов пользователей.
-     * @return Список пользователей с указанными идентификаторами.
-     * @throws RuntimeException Если пользователи с указанными идентификаторами не найдены.
+     * @return CompletableFuture со списком пользователей.
      */
-    public List<User> readAllByIdIn(List<Long> ids) {
-        List<User> users = userRepository.findAllByIdIn(ids);
-        if (users.isEmpty()) {
-            throw new RuntimeException("Не найдено пользователей с указанными идентификаторами.");
-        }
-        logger.info("Найдено {} пользователей по указанным ID.", users.size());
-        return users;
+    @Async
+    public CompletableFuture<List<User>> readAllByIdIn(List<Long> ids) {
+        return userRepository.findAllByIdIn(ids)
+                .thenApply(users -> {
+                    if (users.isEmpty()) {
+                        throw new RuntimeException("Не найдено пользователей с указанными идентификаторами.");
+                    }
+                    logger.info("Найдено {} пользователей по указанным ID.", users.size());
+                    return users;
+                });
     }
 
     /**
@@ -125,41 +136,46 @@ public class UserService {
 
     /**
      * Обновляет существующего пользователя.
-     * Если пользователь с указанным идентификатором не найден, выбрасывается исключение UserNotFoundException.
+     * Если пользователь с указанным идентификатором не найден, выбрасывается исключение RuntimeException.
      *
      * @param request Пользователь с обновленными данными.
-     * @return Обновленный пользователь.
-     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
+     * @return CompletableFuture с обновленным пользователем.
      */
-    public User update(UserUpdateRequest request) {
-        if (!userRepository.existsById(request.getId())) {
-            throw new RuntimeException(String.format("Невозможно обновить. Пользователь с идентификатором %d не найден.", request.getId()));
-        }
-        User user = User.builder()
-                .id(request.getId())
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .birthDate(request.getBirthDate())
-                .role(request.getRole())
-                .build();
-        User saveUser = userRepository.save(user);
-        logger.info("Пользователь с ID {} успешно обновлен.", saveUser.getId());
-        return saveUser;
+    @Async
+    public CompletableFuture<User> update(UserUpdateRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            if (!userRepository.existsById(request.getId())) {
+                throw new RuntimeException(String.format("Невозможно обновить. Пользователь с идентификатором %d не найден.", request.getId()));
+            }
+            User user = User.builder()
+                    .id(request.getId())
+                    .username(request.getUsername())
+                    .email(request.getEmail())
+                    .password(request.getPassword())
+                    .birthDate(request.getBirthDate())
+                    .role(request.getRole())
+                    .build();
+            User savedUser = userRepository.save(user);
+            logger.info("Пользователь с ID {} успешно обновлен.", savedUser.getId());
+            return savedUser;
+        });
     }
 
     /**
      * Удаляет пользователя по его идентификатору.
-     * Если пользователь с указанным идентификатором не найден, выбрасывается исключение UserNotFoundException.
+     * Если пользователь с указанным идентификатором не найден, выбрасывается исключение RuntimeException.
      *
      * @param id Идентификатор пользователя для удаления.
-     * @throws RuntimeException Если пользователь с указанным идентификатором не найден.
+     * @return CompletableFuture с пустым значением.
      */
-    public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException(String.format("Невозможно удалить. Пользователь с идентификатором %d не найден.", id));
-        }
-        userRepository.deleteById(id);
-        logger.info("Пользователь с ID {} успешно удален.", id);
+    @Async
+    public CompletableFuture<Void> delete(Long id) {
+        return CompletableFuture.runAsync(() -> {
+            if (!userRepository.existsById(id)) {
+                throw new RuntimeException(String.format("Невозможно удалить. Пользователь с идентификатором %d не найден.", id));
+            }
+            userRepository.deleteById(id);
+            logger.info("Пользователь с ID {} успешно удален.", id);
+        });
     }
 }

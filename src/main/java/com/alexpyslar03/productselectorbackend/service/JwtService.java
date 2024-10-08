@@ -7,6 +7,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +16,15 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+/**
+ * Сервис для работы с JWT-токенами.
+ * Содержит методы для генерации, валидации и извлечения данных из токенов.
+ */
 @Service
+@EnableAsync // Включает поддержку асинхронного выполнения методов
 public class JwtService {
     @Value("${token.signing.key}")
     private String jwtSigningKey;
@@ -27,6 +35,7 @@ public class JwtService {
      * @param token токен
      * @return имя пользователя
      */
+    @Async
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -37,6 +46,7 @@ public class JwtService {
      * @param userDetails данные пользователя
      * @return токен
      */
+    @Async
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof User customUserDetails) {
@@ -54,8 +64,9 @@ public class JwtService {
      * @param userDetails данные пользователя
      * @return true, если токен валиден
      */
+    @Async
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String userName = extractUserName(token);
+        final String userName = String.valueOf(extractUserName(token));
         return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
@@ -76,7 +87,7 @@ public class JwtService {
      * Генерация токена
      *
      * @param extraClaims дополнительные данные
-     * @param userDetails данные пользователя
+     * @param userDetails  данные пользователя
      * @return токен
      */
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {

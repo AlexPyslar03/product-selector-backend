@@ -6,10 +6,13 @@ import com.alexpyslar03.productselectorbackend.domain.dto.SignUpRequest;
 import com.alexpyslar03.productselectorbackend.domain.dto.UserCreateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +28,8 @@ public class AuthenticationService {
      * @param request данные пользователя
      * @return токен
      */
-    public JwtAuthenticationResponse signUp(SignUpRequest request) {
-
+    @Async
+    public CompletableFuture<JwtAuthenticationResponse> signUp(SignUpRequest request) {
         var user = UserCreateRequest.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -37,7 +40,7 @@ public class AuthenticationService {
         userService.create(user);
 
         var jwt = jwtService.generateToken(user);
-        return new JwtAuthenticationResponse(jwt);
+        return CompletableFuture.completedFuture(new JwtAuthenticationResponse(jwt));
     }
 
     /**
@@ -46,7 +49,8 @@ public class AuthenticationService {
      * @param request данные пользователя
      * @return токен
      */
-    public JwtAuthenticationResponse signIn(SignInRequest request) {
+    @Async
+    public CompletableFuture<JwtAuthenticationResponse> signIn(SignInRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
@@ -57,6 +61,6 @@ public class AuthenticationService {
                 .loadUserByUsername(request.getUsername());
 
         var jwt = jwtService.generateToken(user);
-        return new JwtAuthenticationResponse(jwt);
+        return CompletableFuture.completedFuture(new JwtAuthenticationResponse(jwt));
     }
 }

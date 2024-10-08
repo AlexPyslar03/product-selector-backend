@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Контроллер для работы с пользователями.
@@ -36,9 +37,9 @@ public class UserController {
     })
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<User>> readAll() {
-        List<User> users = userService.readAll();
-        return ResponseEntity.ok(users);
+    public CompletableFuture<ResponseEntity<List<User>>> readAll() {
+        return userService.readAll()
+                .thenApply(ResponseEntity::ok);
     }
 
     /**
@@ -55,10 +56,10 @@ public class UserController {
     })
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<User> readById(
+    public CompletableFuture<ResponseEntity<User>> readById(
             @Parameter(description = "Идентификатор пользователя", required = true) @PathVariable Long id) {
-        User user = userService.readById(id);
-        return ResponseEntity.ok(user);
+        return userService.readById(id)
+                .thenApply(ResponseEntity::ok);
     }
 
     /**
@@ -75,10 +76,10 @@ public class UserController {
     })
     @GetMapping("/batch")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<User>> readAllByIdIn(
+    public CompletableFuture<ResponseEntity<List<User>>> readAllByIdIn(
             @Parameter(description = "Список идентификаторов пользователей", required = true) @RequestParam List<Long> ids) {
-        List<User> users = userService.readAllByIdIn(ids);
-        return ResponseEntity.ok(users);
+        return userService.readAllByIdIn(ids)
+                .thenApply(ResponseEntity::ok);
     }
 
     /**
@@ -95,10 +96,10 @@ public class UserController {
     })
     @PutMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<User> update(
+    public CompletableFuture<ResponseEntity<User>> update(
             @Parameter(description = "Пользователь с обновленными данными", required = true) @RequestBody UserUpdateRequest request) {
-        User user = userService.update(request);
-        return ResponseEntity.ok(user);
+        return userService.update(request)
+                .thenApply(ResponseEntity::ok);
     }
 
     /**
@@ -115,9 +116,9 @@ public class UserController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Void> delete(
+    public CompletableFuture<ResponseEntity<Void>> delete(
             @Parameter(description = "Идентификатор пользователя для удаления", required = true) @PathVariable Long id) {
-        userService.delete(id);
-        return ResponseEntity.noContent().build();
+        return userService.delete(id)
+                .thenApply(aVoid -> ResponseEntity.noContent().build());
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Контроллер для работы с продуктами.
@@ -41,10 +42,11 @@ public class ProductController {
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
-    public ResponseEntity<Product> create(
+    public CompletableFuture<ResponseEntity<Product>> create(
             @Parameter(description = "DTO с данными нового продукта", required = true) @RequestBody ProductCreateRequest dto) {
-        Product createdProduct = productService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+        return productService.create(dto)
+                .thenApply(product -> ResponseEntity.status(HttpStatus.CREATED).body(product))
+                .exceptionally(ex -> ResponseEntity.badRequest().build());
     }
 
     /**
@@ -57,9 +59,9 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Список продуктов успешно возвращен")
     })
     @GetMapping
-    public ResponseEntity<List<Product>> readAll() {
-        List<Product> products = productService.readAll();
-        return ResponseEntity.ok(products);
+    public CompletableFuture<ResponseEntity<List<Product>>> readAll() {
+        return productService.readAll()
+                .thenApply(ResponseEntity::ok);
     }
 
     /**
@@ -75,10 +77,11 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Продукт с указанным ID не найден")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Product> readById(
+    public CompletableFuture<ResponseEntity<Product>> readById(
             @Parameter(description = "Идентификатор продукта", required = true) @PathVariable Long id) {
-        Product product = productService.readById(id);
-        return ResponseEntity.ok(product);
+        return productService.readById(id)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 
     /**
@@ -94,10 +97,11 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Не найдены продукты с указанными ID")
     })
     @GetMapping("/batch")
-    public ResponseEntity<Set<Product>> readAllByIdIn(
+    public CompletableFuture<ResponseEntity<Set<Product>>> readAllByIdIn(
             @Parameter(description = "Список идентификаторов продуктов", required = true) @RequestParam List<Long> ids) {
-        Set<Product> products = productService.readAllByIdIn(ids);
-        return ResponseEntity.ok(products);
+        return productService.readAllByIdIn(ids)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 
     /**
@@ -113,10 +117,11 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Продукты для указанного рецепта не найдены")
     })
     @GetMapping("/recipe/{id}")
-    public ResponseEntity<List<Product>> readByRecipesId(
+    public CompletableFuture<ResponseEntity<List<Product>>> readByRecipesId(
             @Parameter(description = "Идентификатор рецепта", required = true) @PathVariable Long id) {
-        List<Product> products = productService.readByRecipesId(id);
-        return ResponseEntity.ok(products);
+        return productService.readByRecipesId(id)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 
     /**
@@ -132,10 +137,11 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Продукты для указанных рецептов не найдены")
     })
     @GetMapping("/recipe/batch")
-    public ResponseEntity<List<Product>> readByRecipesIdIn(
+    public CompletableFuture<ResponseEntity<List<Product>>> readByRecipesIdIn(
             @Parameter(description = "Список идентификаторов рецептов", required = true) @RequestParam List<Long> ids) {
-        List<Product> products = productService.readByRecipesIdIn(ids);
-        return ResponseEntity.ok(products);
+        return productService.readByRecipesIdIn(ids)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 
     /**
@@ -152,10 +158,11 @@ public class ProductController {
     })
     @PutMapping
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
-    public ResponseEntity<Product> update(
+    public CompletableFuture<ResponseEntity<Product>> update(
             @Parameter(description = "Продукт с обновленными данными", required = true) @RequestBody ProductUpdateRequest product) {
-        Product updatedProduct = productService.update(product);
-        return ResponseEntity.ok(updatedProduct);
+        return productService.update(product)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 
     /**
@@ -172,9 +179,10 @@ public class ProductController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> delete(
+    public CompletableFuture<ResponseEntity<Object>> delete(
             @Parameter(description = "Идентификатор продукта для удаления", required = true) @PathVariable Long id) {
-        productService.delete(id);
-        return ResponseEntity.noContent().build();
+        return productService.delete(id)
+                .thenApply(v -> ResponseEntity.noContent().build())
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 }
