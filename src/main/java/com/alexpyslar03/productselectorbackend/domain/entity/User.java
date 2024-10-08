@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.domain.entity;
 
 import jakarta.persistence.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,7 +12,20 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Сущность, представляющая пользователя в базе данных.
+ * Модель пользователя.
+ * <p>
+ * Этот класс представляет сущность пользователя в системе и включает в себя
+ * поля, необходимые для хранения информации о пользователе и его авторизации.
+ * </p>
+ * <ul>
+ *     <li>id — Уникальный идентификатор пользователя</li>
+ *     <li>username — Имя пользователя (не может быть пустым и уникальным)</li>
+ *     <li>email — Электронная почта пользователя (не может быть пустой и уникальной)</li>
+ *     <li>password — Пароль пользователя (не может быть пустым)</li>
+ *     <li>birthDate — Дата рождения пользователя</li>
+ *     <li>registrationDate — Дата регистрации пользователя</li>
+ *     <li>role — Роль пользователя в системе</li>
+ * </ul>
  */
 @Entity
 @Table(name = "users")
@@ -23,56 +37,62 @@ public class User implements UserDetails {
 
     /**
      * Уникальный идентификатор пользователя.
-     * ID генерируется автоматически с использованием последовательности.
+     * Генерируется автоматически.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     @SequenceGenerator(name = "user_seq", sequenceName = "user_seq", allocationSize = 1)
     @Column(name = "id", nullable = false, unique = true)
+    @Schema(description = "Уникальный идентификатор пользователя", example = "1")
     private Long id;
 
     /**
      * Имя пользователя.
-     * Не может быть null.
+     * Не должно быть пустым и должно быть уникальным.
      */
-    @Column(name = "username",  nullable = false, unique = true)
+    @Column(name = "username", nullable = false, unique = true)
+    @Schema(description = "Имя пользователя", example = "user123")
     private String username;
 
     /**
-     * Адрес электронной почты пользователя.
-     * Должен быть уникальным и не может быть null.
+     * Электронная почта пользователя.
+     * Не должна быть пустой и должна быть уникальной.
      */
     @Column(name = "email", nullable = false, unique = true)
+    @Schema(description = "Электронная почта пользователя", example = "user@example.com")
     private String email;
 
     /**
      * Пароль пользователя.
-     * Не может быть null.
+     * Не должен быть пустым.
      */
     @Column(name = "password", nullable = false)
+    @Schema(description = "Пароль пользователя", example = "password123")
     private String password;
 
     /**
      * Дата рождения пользователя.
-     * Не может быть null. По умолчанию устанавливается текущая дата.
+     * Необязательное поле.
      */
     @Column(name = "birth_date", nullable = false)
+    @Schema(description = "Дата рождения пользователя", example = "1990-01-01")
     private LocalDate birthDate = LocalDate.now();
 
     /**
      * Дата регистрации пользователя.
-     * Не может быть null. По умолчанию устанавливается текущая дата.
+     * Необязательное поле.
      */
     @Column(name = "registration_date", nullable = false)
+    @Schema(description = "Дата регистрации пользователя", example = "2024-10-08")
     private LocalDate registrationDate = LocalDate.now();
 
     /**
-     * Уровень доступа пользователя.
-     * Хранится как строковое значение в базе данных.
-     * По умолчанию установлен уровень доступа USER.
+     * Роль пользователя в системе.
+     * Обязательное поле.
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
+    @Schema(description = "Роль пользователя", example = "USER")
     private Role role;
 
     @Override

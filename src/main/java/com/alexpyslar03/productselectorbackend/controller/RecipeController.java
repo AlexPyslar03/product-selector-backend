@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.controller;
 
 import com.alexpyslar03.productselectorbackend.domain.dto.RecipeCreateRequest;
+import com.alexpyslar03.productselectorbackend.domain.dto.RecipeUpdateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Recipe;
 import com.alexpyslar03.productselectorbackend.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -152,7 +153,7 @@ public class RecipeController {
     @PutMapping
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
     public ResponseEntity<Recipe> update(
-            @Parameter(description = "Рецепт с обновленными данными", required = true) @RequestBody Recipe recipe) {
+            @Parameter(description = "Рецепт с обновленными данными", required = true) @RequestBody RecipeUpdateRequest recipe) {
         Recipe updatedRecipe = recipeService.update(recipe);
         return ResponseEntity.ok(updatedRecipe);
     }

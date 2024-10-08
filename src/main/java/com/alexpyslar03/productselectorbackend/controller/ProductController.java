@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.controller;
 
 import com.alexpyslar03.productselectorbackend.domain.dto.ProductCreateRequest;
+import com.alexpyslar03.productselectorbackend.domain.dto.ProductUpdateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Product;
 import com.alexpyslar03.productselectorbackend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -152,7 +153,7 @@ public class ProductController {
     @PutMapping
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
     public ResponseEntity<Product> update(
-            @Parameter(description = "Продукт с обновленными данными", required = true) @RequestBody Product product) {
+            @Parameter(description = "Продукт с обновленными данными", required = true) @RequestBody ProductUpdateRequest product) {
         Product updatedProduct = productService.update(product);
         return ResponseEntity.ok(updatedProduct);
     }

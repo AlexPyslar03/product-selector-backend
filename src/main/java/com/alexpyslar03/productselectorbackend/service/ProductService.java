@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.domain.dto.ProductCreateRequest;
+import com.alexpyslar03.productselectorbackend.domain.dto.ProductUpdateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Product;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
@@ -38,9 +39,9 @@ public class ProductService {
                 .imageUrl(request.getImageUrl())
                 .recipes(recipeRepository.findAllByIdIn(request.getRecipeIds())) // Установка связанных рецептов
                 .build();
-        Product savedProduct = productRepository.save(product);
-        logger.info("Продукт с ID {} успешно создан.", savedProduct.getId());
-        return savedProduct;
+        Product saveProduct = productRepository.save(product);
+        logger.info("Продукт с ID {} успешно создан.", saveProduct.getId());
+        return saveProduct;
     }
 
     /**
@@ -124,17 +125,23 @@ public class ProductService {
      * Обновляет существующий продукт.
      * Если продукт с указанным идентификатором не найден, выбрасывается исключение ProductNotFoundException.
      *
-     * @param product Продукт с обновленными данными.
+     * @param request Продукт с обновленными данными.
      * @return Обновленный продукт.
      * @throws RuntimeException Если продукт с указанным идентификатором не найден.
      */
-    public Product update(Product product) {
-        if (!productRepository.existsById(product.getId())) {
-            throw new RuntimeException(String.format("Невозможно обновить. Продукт с идентификатором %d не найден.", product.getId()));
+    public Product update(ProductUpdateRequest request) {
+        if (!productRepository.existsById(request.getId())) {
+            throw new RuntimeException(String.format("Невозможно обновить. Продукт с идентификатором %d не найден.", request.getId()));
         }
-        Product updatedProduct = productRepository.save(product);
-        logger.info("Продукт с ID {} успешно обновлен.", product.getId());
-        return updatedProduct;
+        Product product = Product.builder()
+                .id(request.getId())
+                .name(request.getName())
+                .imageUrl(request.getImageUrl())
+                .recipes(recipeRepository.findAllByIdIn(request.getRecipeIds())) // Установка связанных рецептов
+                .build();
+        Product saveProduct = productRepository.save(product);
+        logger.info("Продукт с ID {} успешно обновлен.", saveProduct.getId());
+        return saveProduct;
     }
 
     /**

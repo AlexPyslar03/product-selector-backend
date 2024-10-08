@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.service;
 
 import com.alexpyslar03.productselectorbackend.domain.dto.RecipeCreateRequest;
+import com.alexpyslar03.productselectorbackend.domain.dto.RecipeUpdateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Recipe;
 import com.alexpyslar03.productselectorbackend.repository.ProductRepository;
 import com.alexpyslar03.productselectorbackend.repository.RecipeRepository;
@@ -41,9 +42,9 @@ public class RecipeService {
                 .imageUrl(request.getImageUrl())
                 .products(productRepository.findAllByIdIn(request.getProductIds())) // Установка связанных продуктов
                 .build();
-        Recipe savedRecipe = recipeRepository.save(recipe);
-        logger.info("Рецепт с ID {} успешно создан.", savedRecipe.getId());
-        return savedRecipe;
+        Recipe saveRecipe = recipeRepository.save(recipe);
+        logger.info("Рецепт с ID {} успешно создан.", saveRecipe.getId());
+        return saveRecipe;
     }
 
     /**
@@ -127,17 +128,27 @@ public class RecipeService {
      * Обновляет существующий рецепт.
      * Если рецепт с указанным идентификатором не найден, выбрасывается исключение RecipeNotFoundException.
      *
-     * @param recipe Рецепт с обновленными данными.
+     * @param request Рецепт с обновленными данными.
      * @return Обновленный рецепт.
      * @throws RuntimeException Если рецепт с указанным идентификатором не найден.
      */
-    public Recipe update(Recipe recipe) {
-        if (!recipeRepository.existsById(recipe.getId())) {
-            throw new RuntimeException(String.format("Невозможно обновить. Рецепт с идентификатором %d не найден.", recipe.getId()));
+    public Recipe update(RecipeUpdateRequest request) {
+        if (!recipeRepository.existsById(request.getId())) {
+            throw new RuntimeException(String.format("Невозможно обновить. Рецепт с идентификатором %d не найден.", request.getId()));
         }
-        Recipe updatedRecipe = recipeRepository.save(recipe);
-        logger.info("Рецепт с ID {} успешно обновлен.", recipe.getId());
-        return updatedRecipe;
+        Recipe recipe = Recipe.builder()
+                .id(request.getId())
+                .name(request.getName())
+                .description(request.getDescription())
+                .vegan(request.isVegan())
+                .difficultyLevel(request.getDifficultyLevel())
+                .rating(request.getRating())
+                .imageUrl(request.getImageUrl())
+                .products(productRepository.findAllByIdIn(request.getProductIds())) // Установка связанных продуктов
+                .build();
+        Recipe saveRecipe = recipeRepository.save(recipe);
+        logger.info("Рецепт с ID {} успешно обновлен.", saveRecipe.getId());
+        return saveRecipe;
     }
 
     /**

@@ -4,29 +4,35 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 /**
- * DTO для передачи данных при создании нового продукта.
+ * DTO для передачи данных при обновлении информации о продукте.
  * <p>
- * Этот класс включает в себя данные, необходимые для создания нового продукта
+ * Этот класс включает в себя данные, необходимые для обновления существующего продукта
  * и включает валидационные аннотации для проверки значений полей
  * и аннотации Swagger для документации API.
  * </p>
  * <ul>
+ *     <li>id — Уникальный идентификатор продукта (обязательное поле)</li>
  *     <li>name — Название продукта (не может быть пустым)</li>
  *     <li>imageUrl — URL изображения продукта</li>
  *     <li>recipeIds — Список идентификаторов рецептов, связанных с продуктом</li>
  * </ul>
  */
 @Data
-@Schema(description = "Запрос на создание продукта")
-public class ProductCreateRequest {
+@Schema(description = "Запрос на обновление продукта")
+public class ProductUpdateRequest {
+
+    /**
+     * Уникальный идентификатор продукта.
+     * ID генерируется автоматически с использованием последовательности.
+     */
+    @Schema(description = "Уникальный идентификатор продукта", example = "1")
+    @NotNull(message = "Уникальный идентификатор продукта не может быть пустым")
+    private Long id;
 
     /**
      * Название продукта.

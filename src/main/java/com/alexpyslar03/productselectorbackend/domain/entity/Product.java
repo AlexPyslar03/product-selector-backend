@@ -1,6 +1,7 @@
 package com.alexpyslar03.productselectorbackend.domain.entity;
 
 import jakarta.persistence.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Сущность, представляющая продукт в базе данных.
+ * Модель продукта.
+ * <p>
+ * Этот класс представляет сущность продукта в системе и включает в себя
+ * поля, необходимые для хранения информации о продукте.
+ * </p>
+ * <ul>
+ *     <li>id — Уникальный идентификатор продукта</li>
+ *     <li>name — Название продукта (не может быть пустым и уникальным)</li>
+ *     <li>imageUrl — URL изображения продукта (не может быть пустым и уникальным)</li>
+ *     <li>recipes — Набор рецептов, связанных с продуктом</li>
+ * </ul>
  */
 @Entity
 @Table(name = "products")
@@ -22,32 +33,34 @@ public class Product {
 
     /**
      * Уникальный идентификатор продукта.
-     * ID генерируется автоматически с использованием последовательности.
+     * Генерируется автоматически.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
     @SequenceGenerator(name = "product_seq", sequenceName = "product_seq", allocationSize = 1)
     @Column(name = "id", nullable = false, unique = true)
+    @Schema(description = "Уникальный идентификатор продукта", example = "1")
     private Long id;
 
     /**
      * Название продукта.
-     * Должно быть уникальным и не может быть null.
+     * Не должно быть пустым и должно быть уникальным.
      */
     @Column(name = "name", nullable = false, unique = true)
+    @Schema(description = "Название продукта", example = "Молоко")
     private String name;
 
     /**
      * URL изображения продукта.
-     * Ссылка на внешний ресурс, хранимая в базе данных как строка.
+     * Не должен быть пустым и должен быть уникальным.
      */
     @Column(name = "image_url", nullable = false, unique = true)
+    @Schema(description = "URL изображения продукта", example = "http://example.com/product.jpg")
     private String imageUrl;
 
     /**
-     * Связь многие ко многим между Product и Recipe.
-     * Тип загрузки - LAZY для оптимизации производительности.
-     * Операции каскадирования включают PERSIST и MERGE.
+     * Набор рецептов, связанных с продуктом.
+     * Используется связь многие-ко-многим с рецептами.
      */
     @ManyToMany(
             fetch = FetchType.LAZY,
@@ -58,5 +71,6 @@ public class Product {
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "recipe_id")
     )
+    @Schema(description = "Набор рецептов, связанных с продуктом")
     private Set<Recipe> recipes = new HashSet<>();
 }
