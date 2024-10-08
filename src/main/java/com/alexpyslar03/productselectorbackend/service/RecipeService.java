@@ -38,7 +38,7 @@ public class RecipeService {
                 .vegan(request.isVegan())
                 .difficultyLevel(request.getDifficultyLevel())
                 .rating(request.getRating())
-                .image(request.getImage())
+                .imageUrl(request.getImageUrl())
                 .products(productRepository.findAllByIdIn(request.getProductIds())) // Установка связанных продуктов
                 .build();
         Recipe savedRecipe = recipeRepository.save(recipe);

@@ -40,9 +40,10 @@ public class RecipeCreateRequest {
     private Long rating;
 
     /**
-     * Изображение рецепта в виде массива байтов.
+     * URL изображения рецепта.
+     * Ссылка на внешний ресурс, хранимая в базе данных как строка.
      */
-    private byte[] image;
+    private String imageUrl;
 
     /**
      * Список идентификаторов продуктов, связанных с рецептом.

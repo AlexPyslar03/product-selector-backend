@@ -16,9 +16,10 @@ public class ProductCreateRequest {
     private String name;
 
     /**
-     * Изображение продукта в виде массива байтов.
+     * URL изображения продукта.
+     * Ссылка на внешний ресурс, хранимая в базе данных как строка.
      */
-    private byte[] image;
+    private String imageUrl;
 
     /**
      * Список идентификаторов рецептов, связанных с продуктом.

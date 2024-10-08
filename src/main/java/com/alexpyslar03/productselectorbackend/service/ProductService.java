@@ -35,7 +35,7 @@ public class ProductService {
     public Product create(ProductCreateRequest request) {
         Product product = Product.builder()
                 .name(request.getName())
-                .image(request.getImage())
+                .imageUrl(request.getImageUrl())
                 .recipes(recipeRepository.findAllByIdIn(request.getRecipeIds())) // Установка связанных рецептов
                 .build();
         Product savedProduct = productRepository.save(product);

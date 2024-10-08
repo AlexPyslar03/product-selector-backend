@@ -67,12 +67,11 @@ public class Recipe {
     private Long rating;
 
     /**
-     * Двоичный большой объект (BLOB), представляющий изображение рецепта.
-     * Хранится в базе данных как BYTEA.
+     * URL изображения рецепта.
+     * Ссылка на внешний ресурс, хранимая в базе данных как строка.
      */
-    @Lob
-    @Column(name = "image", columnDefinition = "BYTEA")
-    private byte[] image;
+    @Column(name = "image_url", nullable = false, unique = true)
+    private String imageUrl;
 
     /**
      * Связь многие ко многим между Recipe и Product.

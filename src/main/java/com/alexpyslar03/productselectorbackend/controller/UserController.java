@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Список пользователей успешно возвращен")
     })
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<User>> readAll() {
         List<User> users = userService.readAll();
         return ResponseEntity.ok(users);
@@ -52,6 +54,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> readById(
             @Parameter(description = "Идентификатор пользователя", required = true) @PathVariable Long id) {
         User user = userService.readById(id);
@@ -71,6 +74,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Не найдены пользователи с указанными ID")
     })
     @GetMapping("/batch")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<User>> readAllByIdIn(
             @Parameter(description = "Список идентификаторов пользователей", required = true) @RequestParam List<Long> ids) {
         List<User> users = userService.readAllByIdIn(ids);
@@ -90,6 +94,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
     })
     @PutMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> update(
             @Parameter(description = "Пользователь с обновленными данными", required = true) @RequestBody UserUpdateRequest request) {
         User user = userService.update(request);
@@ -109,6 +114,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(
             @Parameter(description = "Идентификатор пользователя для удаления", required = true) @PathVariable Long id) {
         userService.delete(id);

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class RecipeController {
             @ApiResponse(responseCode = "400", description = "Некорректные данные для создания рецепта")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
     public ResponseEntity<Recipe> create(
             @Parameter(description = "DTO с данными нового рецепта", required = true) @RequestBody RecipeCreateRequest dto) {
         Recipe createdRecipe = recipeService.create(dto);
@@ -148,6 +150,7 @@ public class RecipeController {
             @ApiResponse(responseCode = "404", description = "Рецепт с указанным ID не найден")
     })
     @PutMapping
+    @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
     public ResponseEntity<Recipe> update(
             @Parameter(description = "Рецепт с обновленными данными", required = true) @RequestBody Recipe recipe) {
         Recipe updatedRecipe = recipeService.update(recipe);
@@ -167,6 +170,7 @@ public class RecipeController {
             @ApiResponse(responseCode = "404", description = "Рецепт с указанным ID не найден")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
     public ResponseEntity<Void> delete(
             @Parameter(description = "Идентификатор рецепта для удаления", required = true) @PathVariable Long id) {
         recipeService.delete(id);
