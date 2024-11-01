@@ -3,6 +3,8 @@ package com.alexpyslar03.productselectorbackend.controller;
 import com.alexpyslar03.productselectorbackend.domain.dto.ProductCreateRequest;
 import com.alexpyslar03.productselectorbackend.domain.dto.ProductUpdateRequest;
 import com.alexpyslar03.productselectorbackend.domain.entity.Product;
+import com.alexpyslar03.productselectorbackend.exception.EntityNotFoundException;
+import com.alexpyslar03.productselectorbackend.exception.InvalidDataException;
 import com.alexpyslar03.productselectorbackend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,7 +48,12 @@ public class ProductController {
             @Parameter(description = "DTO с данными нового продукта", required = true) @RequestBody ProductCreateRequest dto) {
         return productService.create(dto)
                 .thenApply(product -> ResponseEntity.status(HttpStatus.CREATED).body(product))
-                .exceptionally(ex -> ResponseEntity.badRequest().build());
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof InvalidDataException) {
+                        return ResponseEntity.badRequest().body(null);
+                    }
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                });
     }
 
     /**
@@ -55,9 +62,7 @@ public class ProductController {
      * @return Ответ со списком всех продуктов и статусом 200 OK.
      */
     @Operation(summary = "Получение списка всех продуктов", description = "Возвращает список всех продуктов в системе.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Список продуктов успешно возвращен")
-    })
+    @ApiResponse(responseCode = "200", description = "Список продуктов успешно возвращен")
     @GetMapping
     public CompletableFuture<ResponseEntity<List<Product>>> readAll() {
         return productService.readAll()
@@ -69,7 +74,6 @@ public class ProductController {
      *
      * @param id Идентификатор продукта.
      * @return Ответ с продуктом и статусом 200 OK.
-     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
      */
     @Operation(summary = "Получение продукта по ID", description = "Возвращает продукт по указанному ID.")
     @ApiResponses(value = {
@@ -78,10 +82,16 @@ public class ProductController {
     })
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<Product>> readById(
-            @Parameter(description = "Идентификатор продукта", required = true) @PathVariable Long id) {
+            @Parameter(description = "Идентификатор продукта", required = true)
+            @PathVariable Long id) {
         return productService.readById(id)
                 .thenApply(ResponseEntity::ok)
-                .exceptionally(ex -> ResponseEntity.notFound().build());
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof EntityNotFoundException) {
+                        return ResponseEntity.notFound().build();
+                    }
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                });
     }
 
     /**
@@ -89,7 +99,6 @@ public class ProductController {
      *
      * @param ids Список идентификаторов продуктов.
      * @return Ответ с набором продуктов и статусом 200 OK.
-     * @throws RuntimeException Если ни один из продуктов с указанными идентификаторами не найден.
      */
     @Operation(summary = "Получение продуктов по ID", description = "Возвращает набор продуктов по указанным ID.")
     @ApiResponses(value = {
@@ -98,10 +107,16 @@ public class ProductController {
     })
     @GetMapping("/batch")
     public CompletableFuture<ResponseEntity<Set<Product>>> readAllByIdIn(
-            @Parameter(description = "Список идентификаторов продуктов", required = true) @RequestParam List<Long> ids) {
+            @Parameter(description = "Список идентификаторов продуктов", required = true)
+            @RequestParam List<Long> ids) {
         return productService.readAllByIdIn(ids)
                 .thenApply(ResponseEntity::ok)
-                .exceptionally(ex -> ResponseEntity.notFound().build());
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof EntityNotFoundException) {
+                        return ResponseEntity.notFound().build();
+                    }
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                });
     }
 
     /**
@@ -109,7 +124,6 @@ public class ProductController {
      *
      * @param id Идентификатор рецепта.
      * @return Ответ со списком продуктов и статусом 200 OK.
-     * @throws RuntimeException Если продукты для указанного рецепта не найдены.
      */
     @Operation(summary = "Получение продуктов по ID рецепта", description = "Возвращает список продуктов по указанному ID рецепта.")
     @ApiResponses(value = {
@@ -118,10 +132,16 @@ public class ProductController {
     })
     @GetMapping("/recipe/{id}")
     public CompletableFuture<ResponseEntity<List<Product>>> readByRecipesId(
-            @Parameter(description = "Идентификатор рецепта", required = true) @PathVariable Long id) {
+            @Parameter(description = "Идентификатор рецепта", required = true)
+            @PathVariable Long id) {
         return productService.readByRecipesId(id)
                 .thenApply(ResponseEntity::ok)
-                .exceptionally(ex -> ResponseEntity.notFound().build());
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof EntityNotFoundException) {
+                        return ResponseEntity.notFound().build();
+                    }
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                });
     }
 
     /**
@@ -129,7 +149,6 @@ public class ProductController {
      *
      * @param ids Список идентификаторов рецептов.
      * @return Ответ со списком продуктов и статусом 200 OK.
-     * @throws RuntimeException Если продукты для указанных рецептов не найдены.
      */
     @Operation(summary = "Получение продуктов по списку ID рецептов", description = "Возвращает список продуктов по списку идентификаторов рецептов.")
     @ApiResponses(value = {
@@ -138,10 +157,16 @@ public class ProductController {
     })
     @GetMapping("/recipe/batch")
     public CompletableFuture<ResponseEntity<List<Product>>> readByRecipesIdIn(
-            @Parameter(description = "Список идентификаторов рецептов", required = true) @RequestParam List<Long> ids) {
+            @Parameter(description = "Список идентификаторов рецептов", required = true)
+            @RequestParam List<Long> ids) {
         return productService.readByRecipesIdIn(ids)
                 .thenApply(ResponseEntity::ok)
-                .exceptionally(ex -> ResponseEntity.notFound().build());
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof EntityNotFoundException) {
+                        return ResponseEntity.notFound().build();
+                    }
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                });
     }
 
     /**
@@ -149,30 +174,38 @@ public class ProductController {
      *
      * @param product Продукт с обновленными данными.
      * @return Ответ с обновленным продуктом и статусом 200 OK.
-     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
      */
     @Operation(summary = "Обновление данных продукта", description = "Обновляет данные продукта и возвращает его.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Продукт успешно обновлен"),
-            @ApiResponse(responseCode = "404", description = "Продукт с указанным ID не найден")
+            @ApiResponse(responseCode = "404", description = "Продукт с указанным ID не найден"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные для обновления продукта")
     })
     @PutMapping
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
     public CompletableFuture<ResponseEntity<Product>> update(
-            @Parameter(description = "Продукт с обновленными данными", required = true) @RequestBody ProductUpdateRequest product) {
+            @Parameter(description = "Продукт с обновленными данными", required = true)
+            @RequestBody ProductUpdateRequest product) {
         return productService.update(product)
                 .thenApply(ResponseEntity::ok)
-                .exceptionally(ex -> ResponseEntity.notFound().build());
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof EntityNotFoundException) {
+                        return ResponseEntity.notFound().build();
+                    }
+                    if (ex.getCause() instanceof InvalidDataException) {
+                        return ResponseEntity.badRequest().body(null);
+                    }
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                });
     }
 
     /**
      * Удаляет продукт по его идентификатору.
      *
-     * @param id Идентификатор продукта для удаления.
-     * @return Ответ со статусом 204 No Content.
-     * @throws RuntimeException Если продукт с указанным идентификатором не найден.
+     * @param id Идентификатор продукта.
+     * @return Ответ с пустым телом и статусом 204 No Content.
      */
-    @Operation(summary = "Удаление продукта по ID", description = "Удаляет продукт по указанному ID.")
+    @Operation(summary = "Удаление продукта", description = "Удаляет продукт по указанному ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Продукт успешно удален"),
             @ApiResponse(responseCode = "404", description = "Продукт с указанным ID не найден")
@@ -180,9 +213,14 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMIN')")
     public CompletableFuture<ResponseEntity<Object>> delete(
-            @Parameter(description = "Идентификатор продукта для удаления", required = true) @PathVariable Long id) {
+            @Parameter(description = "Идентификатор продукта", required = true) @PathVariable Long id) {
         return productService.delete(id)
-                .thenApply(v -> ResponseEntity.noContent().build())
-                .exceptionally(ex -> ResponseEntity.notFound().build());
+                .thenApply(aVoid -> ResponseEntity.noContent().build())
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof EntityNotFoundException) {
+                        return ResponseEntity.notFound().build();
+                    }
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                });
     }
 }
