@@ -8,23 +8,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
-/**
- * Конфигурация асинхронных операций.
- * <p>
- * Этот класс настраивает пул потоков для обработки асинхронных задач
- * с использованием Spring. Пул потоков позволяет выполнять методы,
- * помеченные аннотацией @Async, в фоновом режиме.
- * </p>
- */
 @Configuration
 @EnableAsync
 public class AsyncConfiguration implements AsyncConfigurer {
 
-    /**
-     * Настраивает пул потоков для выполнения асинхронных задач.
-     *
-     * @return настроенный экземпляр Executor
-     */
     @Override
     @Bean(name = "taskExecutor")
     public Executor getAsyncExecutor() {
